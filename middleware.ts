@@ -1,25 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/login', '/register']
+// In-memory rate limit store (Note: In production, use Redis)
+const rateLimitStore = new Map<string, { count: number, resetAt: number }>()
 
-export function middleware(req: NextRequest) {
-  const token = req.cookies.get('haomun_token')?.value
-  const { pathname } = req.nextUrl
-  const isPublic = PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+export function middleware(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+  const path = request.nextUrl.pathname
 
-  // Unauthenticated user trying to access a protected route → redirect to login
-  if (!token && !isPublic) {
-    return NextResponse.redirect(new URL('/login', req.url))
-  }
+  // Only rate limit API routes
+  if (path.startsWith('/api')) {
+    const now = Date.now()
+    const entry = rateLimitStore.get(ip) || { count: 0, resetAt: now + 60000 }
 
-  // Authenticated user trying to access login/register → redirect to pavilion
-  if (token && isPublic) {
-    return NextResponse.redirect(new URL('/pavilion', req.url))
+    if (now > entry.resetAt) {
+      entry.count = 0
+      entry.resetAt = now + 60000
+    }
+
+    entry.count++
+    rateLimitStore.set(ip, entry)
+
+    if (entry.count > 60) { // 60 Req per minute
+      return new NextResponse(
+        JSON.stringify({ success: false, error: 'Too many requests. The Oracle needs a moment to breathe.' }),
+        { status: 429, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|icon.*|apple-icon.*).*)'],
+  matcher: '/api/:path*',
 }

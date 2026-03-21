@@ -78,11 +78,30 @@ export async function generateSkillAnalysis(aggregatedData: any): Promise<any> {
   }
 
   const prompt = `You are the HaoMun Oracle. Analyze:\n\n${JSON.stringify(aggregatedData, null, 2)}\n\nReturn ONLY a JSON object with: overview (string), strengths (string[]), skillGaps (string[]), strategy (string).`
+  
+  const fallback = {
+    overview: "The digital mists partially obscure your past trials, but your manifestation shows steady growth.",
+    strengths: ["Consistency in daily devotion", "Wide-ranging curiosity across digital realms"],
+    skillGaps: ["Deeper mastery of advanced structures is yet to be claimed"],
+    strategy: "Focus on complex dynamic rituals to ascend further.",
+    isFallback: true
+  }
 
-  return retryCall(async () => {
-    const res = await model!.generateContent(prompt)
-    const text = res.response.text().trim()
-    const match = text.match(/\{[\s\S]*\}/)
-    return JSON.parse(match ? match[0] : text)
-  })
+  try {
+    return await retryCall(async () => {
+      const res = await model!.generateContent(prompt)
+      let text = res.response.text().trim()
+      const match = text.match(/\{[\s\S]*\}/)
+      text = match ? match[0] : text
+      try {
+        return JSON.parse(text)
+      } catch (e) {
+        console.warn('[AI] JSON Parse failed, returning fallback')
+        return fallback
+      }
+    })
+  } catch (e) {
+    console.error('[AI] Generation failed, returning fallback:', e)
+    return fallback
+  }
 }

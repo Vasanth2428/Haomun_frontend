@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { getProfile, aggregateProfiles, updateProfile } from '@/utils/api'
+import Image from 'next/image'
 import styles from './profile-page.module.css'
 
 type Tab = 'identity' | 'personal' | 'security'
@@ -183,12 +184,14 @@ export default function ProfilePage() {
                                 transition: 'all 0.3s ease',
                                 cursor: 'pointer'
                             }}>
-                                <img
+                                <Image
                                     src={previewUrl || user?.avatarUrl || DEFAULT_AVATAR}
                                     alt="Avatar"
+                                    width={130}
+                                    height={130}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'filter 0.3s ease' }}
                                     className={styles.avatarImg}
-                                    onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_AVATAR }}
+                                    unoptimized // Since it's external user avatars
                                 />
                                 <div className={styles.avatarOverlayModern}>
                                     <span style={{ fontSize: '1.5rem' }}>📷</span>
@@ -196,7 +199,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Floating Edit Badge */}
-                            <div className={styles.avatarEditBadge} onClick={triggerAvatarUpload}>
+                            <div className={styles.avatarEditBadge} onClick={triggerAvatarUpload} aria-label="Edit Avatar">
                                 <span>✎</span>
                             </div>
 
@@ -206,6 +209,7 @@ export default function ProfilePage() {
                                 onChange={handleFileChange}
                                 style={{ display: 'none' }}
                                 accept="image/*"
+                                aria-hidden="true"
                             />
                         </div>
 
