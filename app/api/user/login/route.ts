@@ -32,10 +32,12 @@ export async function POST(req: NextRequest) {
     }
 
     const token = generateToken(user._id.toString())
+    const { password: _, ...safeUser } = user.toObject()
+
     return Response.json({ 
       success: true, 
       data: { 
-        ...user.toObject(), 
+        ...safeUser, 
         token 
       } 
     })

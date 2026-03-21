@@ -37,6 +37,7 @@ describe('Auth API Integration', () => {
     const data = await res.json()
 
     expect(data.success).toBe(true)
+    expect(data.data.password).toBeUndefined() // DEFENSE: Ensure hash is leaked!
     expect(User.create).toHaveBeenCalled()
   })
 
