@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getFriends, searchUsers, addFriend, removeFriend } from '@/utils/api'
 import Leaderboard from './leaderboard'
+import GuildNexus from './GuildNexus'
 import styles from './social-nexus.module.css'
 
 export default function SocialNexus() {
@@ -12,6 +13,7 @@ export default function SocialNexus() {
   const [loading, setLoading] = useState(true)
   const [searching, setSearching] = useState(false)
   const [showFriendsOnly, setShowFriendsOnly] = useState(false)
+  const [activeTab, setActiveTab] = useState<'circle' | 'guilds'>('circle')
   const [status, setStatus] = useState('')
 
   useEffect(() => {
@@ -63,9 +65,30 @@ export default function SocialNexus() {
         <p style={{ color: 'var(--haomun-mist)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto' }}>
           Connect with fellow seekers and synchronize your mastery across the digital realm.
         </p>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '32px' }}>
+          <button 
+            className={`btn ${activeTab === 'circle' ? 'btn-primary' : 'btn-secondary'}`} 
+            style={{ padding: '12px 32px', fontFamily: 'Cinzel' }}
+            onClick={() => setActiveTab('circle')}
+          >
+            The Circle
+          </button>
+          <button 
+            className={`btn ${activeTab === 'guilds' ? 'btn-primary' : 'btn-secondary'}`} 
+            style={{ padding: '12px 32px', fontFamily: 'Cinzel' }}
+            onClick={() => setActiveTab('guilds')}
+          >
+            Guild Nexus
+          </button>
+        </div>
       </div>
 
-      <div className={styles.nexusGrid}>
+      {activeTab === 'guilds' ? (
+        <GuildNexus />
+      ) : (
+        <>
+          <div className={styles.nexusGrid}>
         {/* Friends List */}
         <div className="scroll-card glass-panel runic-glow">
           <h2 className="scroll-header">Synchronized Comrades ({friends.length})</h2>
@@ -153,6 +176,8 @@ export default function SocialNexus() {
         </div>
         <Leaderboard friendsOnly={showFriendsOnly} />
       </div>
+      </>
+      )}
 
       {status && (
         <div style={{ marginTop: '24px', textAlign: 'center', color: 'var(--haomun-gold)', fontSize: '0.9rem' }}>{status}</div>

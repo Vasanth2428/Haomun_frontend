@@ -18,6 +18,7 @@ export interface IUser extends Document {
   friends: string[]
   savedDrafts: string[]
   scoreHistory: { score: number; timestamp: Date }[]
+  guildId?: mongoose.Types.ObjectId
   archives: { title: string; content: string; timestamp: Date }[]
   createdAt: Date
   comparePassword(candidatePassword: string): Promise<boolean>
@@ -48,6 +49,7 @@ const userSchema = new Schema<IUser>({
     score: { type: Number, required: true },
     timestamp: { type: Date, default: Date.now }
   }],
+  guildId: { type: Schema.Types.ObjectId, ref: 'Guild' },
   createdAt: { type: Date, default: Date.now },
 })
 

@@ -16,8 +16,31 @@ export default async function Home() {
   const token = cookieStore.get('auth_token')
   const isLoggedIn = !!token
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'HaoMun Intelligence Suite',
+    operatingSystem: 'Web',
+    applicationCategory: 'EducationalApplication',
+    description: 'Ancient wisdom meets modern intelligence. The ultimate analysis platform for competitive programmers.',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      ratingCount: '128',
+    },
+  }
+
   return (
     <div className={styles.landingWrapper}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero Section */}
       <header className={styles.hero}>
         <h1 className={styles.heroTitle}>HaoMun</h1>

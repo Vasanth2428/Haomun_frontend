@@ -152,6 +152,19 @@ export async function saveToArchive(title: string, content: string) {
   return apiRequest('/api/user/archive', { title, content }, 'POST');
 }
 
+// ── Guilds ─────────────────────────────────────────────────────
+export async function getGuilds() {
+  return apiRequest('/api/guild/list', null, 'GET');
+}
+
+export async function createGuild(guildData: { name: string; description: string; emblem?: string }) {
+  return apiRequest('/api/guild/create', guildData, 'POST');
+}
+
+export async function joinGuild(guildId: string) {
+  return apiRequest('/api/guild/join', { guildId }, 'POST');
+}
+
 // ── Legacy aliases ──────────────────────────────────────────────
 export async function unveilInsight(stats: any) {
   return generateSummary(stats);
