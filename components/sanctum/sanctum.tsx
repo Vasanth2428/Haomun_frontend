@@ -57,7 +57,7 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
 
                     // Store detailed trace for debugging
                     const r = result as any
-                    if (r.detail) setErrorDetail(r.detail)
+                    if (r.error) setErrorDetail(r.error)
 
                     if (result.status === 500 || result.error?.toLowerCase().includes('internal server error')) {
                         setError('SERVER_CRASH')

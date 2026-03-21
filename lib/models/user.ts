@@ -54,17 +54,9 @@ const userSchema = new Schema<IUser>({
 })
 
 // Hash password before saving
-// @ts-ignore - for compatibility with different Mongoose versions and the 'next' callback
-userSchema.pre('save', function(next: (err?: any) => void) {
-  const user = this as any
-  if (!user.isModified('password')) return next()
-  
-  bcrypt.hash(user.password, 10)
-    .then(hash => {
-      user.password = hash
-      next()
-    })
-    .catch(next)
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return
+  this.password = await bcrypt.hash(this.password, 10)
 })
 
 // Compare password method
