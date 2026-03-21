@@ -1,6 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 
-export async function generateReportPDF(summary: string, insights: any): Promise<Buffer> {
+export async function generateReportPDF(summary: string, insights: any): Promise<Uint8Array> {
   const doc = await PDFDocument.create()
   const font = await doc.embedFont(StandardFonts.Helvetica)
   const boldFont = await doc.embedFont(StandardFonts.HelveticaBold)
@@ -40,5 +40,5 @@ export async function generateReportPDF(summary: string, insights: any): Promise
   }
 
   const pdfBytes = await doc.save()
-  return Buffer.from(pdfBytes)
+  return pdfBytes
 }

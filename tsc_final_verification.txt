@@ -1,0 +1,4 @@
+﻿lib/models/user.ts(51,44): error TS2349: This expression is not callable.
+  Type 'SaveOptions' has no call signatures.
+lib/models/user.ts(53,3): error TS2349: This expression is not callable.
+  Type 'SaveOptions' has no call signatures.

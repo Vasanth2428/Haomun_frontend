@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { scribeEdit, createReportPdf } from '@/utils/api'
+import { scribeEdit, createReportPdf, saveToArchive } from '@/utils/api'
 import styles from './scroll-forge.module.css'
 
 interface ScrollForgeProps {
@@ -48,8 +48,7 @@ export default function ScrollForge({ data }: ScrollForgeProps) {
     setPreserving(true)
     setStatus('Preserving manifestation in the Archive Chamber...')
     const title = `Manifestation - ${new Date().toLocaleDateString()}`
-    const { saveToArchive } = await import('@/utils/api') // Dynamic import to be safe if needed, but it's already imported
-    const result = await (await import('@/utils/api')).saveToArchive(title, content)
+    const result = await saveToArchive(title, content)
     
     if (result.success) {
       setStatus('Manifestation successfully preserved in the Archive.')

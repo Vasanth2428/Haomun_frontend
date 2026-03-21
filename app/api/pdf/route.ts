@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const { summary, insights } = validation.data
     const pdfBuffer = await generateReportPDF(summary, insights)
 
-    return new Response(new Uint8Array(pdfBuffer), {
+    return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="haomun-report.pdf"',
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     const insights = JSON.parse(url.searchParams.get('insights') || '{}')
     const pdfBuffer = await generateReportPDF(summary, insights)
 
-    return new Response(new Uint8Array(pdfBuffer), {
+    return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="haomun-report.pdf"',
