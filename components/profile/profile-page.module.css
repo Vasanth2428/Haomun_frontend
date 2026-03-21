@@ -1,0 +1,108 @@
+.avatarImg {
+  transition: filter 0.3s ease;
+}
+
+.avatarContainer:hover .avatarImg {
+  filter: brightness(0.5) blur(2px);
+}
+
+.avatarContainer:hover .avatarOverlayModern {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.avatarOverlayModern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.avatarEditBadge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 32px;
+  height: 32px;
+  background: var(--haomun-gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  border: 2px solid var(--haomun-charcoal);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.avatarEditBadge:hover {
+  transform: scale(1.1);
+  background: var(--haomun-gold-bright);
+}
+
+.tabMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tabButton {
+  background: none;
+  border: none;
+  color: var(--haomun-slate);
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: 1px;
+}
+
+.tabButton:hover {
+  color: var(--haomun-scroll);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabButton.active {
+  color: var(--haomun-gold);
+  background: rgba(212, 175, 55, 0.1);
+  border-right: 2px solid var(--haomun-gold);
+}
+
+.tabIcon {
+  font-size: 1.1rem;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.slideUp {
+  animation: slideUp 0.4s ease-out;
+}
+
+.fadeIn {
+  animation: fadeIn 0.8s ease-out;
+}

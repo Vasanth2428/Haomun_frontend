@@ -1,0 +1,14 @@
+.contestGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.pulsingShard {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--haomun-primary); }
+  50% { opacity: 0.5; text-shadow: none; }
+}

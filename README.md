@@ -51,13 +51,18 @@ This is the React/Next.js frontend application that provides the user interface 
 
 3. **Environment Setup**
    ```bash
-   cp .env.local.example .env.local
+   cp .env.example .env.local
    ```
    
    Configure the following environment variable in `.env.local`:
    ```env
-   NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+   NEXT_PUBLIC_BACKEND_URL=https://haomun-backend.onrender.com
    ```
+   
+   > **⚠️ Important**: After updating `.env.local` or environment variables, you must rebuild the project for changes to take effect:
+   > - For local development: Restart the development server (`npm run dev`)
+   > - For Vercel deployment: Trigger a new deployment after environment variable changes
+   > - Without a rebuild, the frontend will continue using cached/old environment variable values
 
 4. **Run development server**
    ```bash
@@ -124,7 +129,7 @@ The frontend communicates with the HaoMun backend through REST API endpoints def
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_BACKEND_URL` | Backend API base URL | `http://localhost:5000` |
+| `NEXT_PUBLIC_BACKEND_URL` | Backend API base URL | `https://haomun-backend.onrender.com` |
 
 ## Development
 

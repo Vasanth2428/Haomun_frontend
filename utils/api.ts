@@ -1,32 +1,59 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+import { getAuthToken as getToken, setAuthCookie, clearAuthCookie } from '@/utils/auth'
 
-async function apiRequest(path: string, payload: any) {
-  // Robust backend offline protection
-  const backendUrl = BACKEND_URL;
-  const isBackendAvailable = backendUrl &&
-                            backendUrl !== 'undefined' &&
-                            backendUrl.trim() !== '' &&
-                            process.env.NEXT_PUBLIC_BACKEND_URL &&
-                            process.env.NEXT_PUBLIC_BACKEND_URL !== 'undefined';
+// Use relative paths — API routes are now served by the same Next.js app
+const BASE_URL = ''
 
-  if (!isBackendAvailable) {
-    console.warn("Backend offline — skipping API call to", path);
-    return { success: false, error: "Backend service unavailable" };
-  }
+function getAuthToken() {
+  return getToken();
+}
 
+export function setAuthToken(token: string) {
+  setAuthCookie(token);
+}
+
+export function logout() {
+  clearAuthCookie();
+}
+
+async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 'PATCH' | 'PUT' = 'POST') {
   try {
-    const fullUrl = `${backendUrl}${path}`;
-    const response = await fetch(fullUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const fullUrl = `${BASE_URL}${path}`;
+    const token = getAuthToken();
+
+    const headers: Record<string, string> = {};
+    if (!(payload instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const options: RequestInit = { method, headers };
+
+    if (payload && method !== 'GET') {
+      options.body = payload instanceof FormData ? payload : JSON.stringify(payload);
+    }
+
+    const response = await fetch(fullUrl, options);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Network error' }));
-      return { success: false, error: errorData.message || 'Request failed' };
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const ct = response.headers.get('content-type');
+        if (ct?.includes('application/json')) {
+          const errData = await response.json();
+          errorMessage = errData.message || errData.error || errorMessage;
+        }
+      } catch { /* ignore */ }
+
+      return { success: false, error: errorMessage, status: response.status };
+    }
+
+    // Handle PDF binary responses
+    const ct = response.headers.get('content-type');
+    if (ct?.includes('application/pdf')) {
+      const blob = await response.blob();
+      return { success: true, data: blob };
     }
 
     const data = await response.json();
@@ -39,18 +66,68 @@ async function apiRequest(path: string, payload: any) {
   }
 }
 
-export async function unveilInsight(stats: any) {
-  return apiRequest('/api/summary/generate', stats);
+// ── Authentication ──────────────────────────────────────────────
+export async function register(userData: any) {
+  return apiRequest('/api/user/register', userData);
 }
 
+export async function login(credentials: any) {
+  return apiRequest('/api/user/login', credentials);
+}
+
+export async function getProfile() {
+  return apiRequest('/api/user/profile', null, 'GET');
+}
+
+export async function updateProfile(profileData: any) {
+  return apiRequest('/api/user/profile', profileData, 'POST');
+}
+
+// ── Platform Data ───────────────────────────────────────────────
+export async function getLeetCodeStats(username: string) {
+  return apiRequest(`/api/insights?platform=leetcode&username=${encodeURIComponent(username)}`, null, 'GET');
+}
+
+export async function getCodeforcesStats(username: string) {
+  return apiRequest(`/api/insights?platform=codeforces&username=${encodeURIComponent(username)}`, null, 'GET');
+}
+
+export async function aggregateProfiles(platforms: any) {
+  return apiRequest('/api/user/sanctum', null, 'GET');
+}
+
+// ── Insights & AI ───────────────────────────────────────────────
+export async function getSkillAnalysis() {
+  return apiRequest('/api/insights/skill-analysis', null, 'GET');
+}
+
+export async function generateSummary(platformData: any) {
+  return apiRequest('/api/summary/generate', platformData);
+}
+
+// ── Comparison ──────────────────────────────────────────────────
 export async function compareAllies(users: any[]) {
   return apiRequest('/api/compare', { users });
 }
 
+// ── Tools ───────────────────────────────────────────────────────
+export async function getContests() {
+  return apiRequest('/api/contests', null, 'GET');
+}
+
+export async function createReportPdf(params: any) {
+  return apiRequest('/api/pdf', params, 'POST');
+}
+
+// ── Legacy aliases ──────────────────────────────────────────────
+export async function unveilInsight(stats: any) {
+  return generateSummary(stats);
+}
+
 export async function scribeEdit(draft: string, instruction: string) {
-  return apiRequest('/api/scrollforge/edit', { draft, instruction });
+  return apiRequest('/api/summary/scrollforge/edit', { draft, instruction });
 }
 
 export async function releaseScroll(text: string) {
-  return apiRequest('/api/report/create', { text });
+  return createReportPdf({ summary: text });
 }
