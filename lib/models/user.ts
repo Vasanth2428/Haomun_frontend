@@ -17,6 +17,7 @@ export interface IUser extends Document {
   lastAnalysisDate?: Date
   friends: string[]
   savedDrafts: string[]
+  scoreHistory: { score: number; timestamp: Date }[]
   archives: { title: string; content: string; timestamp: Date }[]
   createdAt: Date
   comparePassword(candidatePassword: string): Promise<boolean>
@@ -41,6 +42,10 @@ const userSchema = new Schema<IUser>({
   archives: [{
     title: { type: String, required: true },
     content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now }
+  }],
+  scoreHistory: [{
+    score: { type: Number, required: true },
     timestamp: { type: Date, default: Date.now }
   }],
   createdAt: { type: Date, default: Date.now },

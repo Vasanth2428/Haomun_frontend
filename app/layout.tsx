@@ -5,8 +5,31 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'HaoMun – The Intelligence Pavilion',
-  description: 'Ancient wisdom meets modern intelligence',
+  description: 'Ancient wisdom meets modern intelligence. The ultimate analysis platform for seekers of digital mastery.',
   generator: 'v0.app',
+  metadataBase: new URL('https://haomun.vercel.app'), // Placeholder, would be replaced by actual domain
+  openGraph: {
+    title: 'HaoMun | Ancient Wisdom meets AI',
+    description: 'The convergence of strategic wisdom and artificial intelligence for competitive programmers.',
+    url: 'https://haomun.vercel.app',
+    siteName: 'HaoMun',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'HaoMun - Ancient Wisdom meets AI',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HaoMun | Ancient Wisdom meets AI',
+    description: 'The convergence of strategic wisdom and artificial intelligence for competitive programmers.',
+    images: ['/og-image.png'],
+  },
   icons: {
     icon: [
       {

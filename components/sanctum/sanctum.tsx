@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { aggregateProfiles, getSkillAnalysis, getProfile, getLeetCodeStats } from '@/utils/api'
+import SkillRadar from '@/components/charts/SkillRadar'
+import ScoreHistoryChart from '@/components/charts/ScoreHistoryChart'
+import TopicHeatmap from '@/components/charts/TopicHeatmap'
 import styles from './sanctum.module.css'
 
 export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => void }) {
@@ -262,6 +265,30 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
                         </div>
                     </div>
 
+                    <div className="discovery-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 450px) 1fr', gap: '32px', marginBottom: '40px' }}>
+                        {/* Left: Skill DNA Radar */}
+                        <div className="scroll-card glass-panel runic-glow">
+                            <h3 className="scroll-header" style={{ fontSize: '1.2rem', marginBottom: '20px' }}>⚖ Skill Resonance Radar</h3>
+                            <SkillRadar metrics={data?.unifiedScore?.metrics || data?.metrics || { totalSolved: 0, maxRating: 0, consistencyBonus: 0, platforms: 0 }} />
+                        </div>
+
+                        {/* Right: Score History */}
+                        <div className="scroll-card glass-panel">
+                            <h3 className="scroll-header" style={{ fontSize: '1.2rem', marginBottom: '20px' }}>📈 Score Ascension Path</h3>
+                            <ScoreHistoryChart history={data?.scoreHistory || []} />
+                            <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div className="insight-item glass-panel" style={{ padding: '12px' }}>
+                                    <div className="insight-label" style={{ fontSize: '0.7rem' }}>Platform Breadth</div>
+                                    <div style={{ color: 'var(--haomun-gold)', fontWeight: 'bold' }}>{data?.unifiedScore?.metrics?.platforms || 0} Sectors Sync'd</div>
+                                </div>
+                                <div className="insight-item glass-panel" style={{ padding: '12px' }}>
+                                    <div className="insight-label" style={{ fontSize: '0.7rem' }}>Max Performance</div>
+                                    <div style={{ color: 'var(--haomun-accent)', fontWeight: 'bold' }}>{data?.unifiedScore?.metrics?.maxRating || 0} Rating</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="insights-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
                         <div className="insight-item glass-panel hover-lift">
                             <div className="insight-label">LeetCode Sync</div>
@@ -278,6 +305,16 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
                         <div className="insight-item glass-panel hover-lift">
                             <div className="insight-label">Trials Observed</div>
                             <div className="insight-value" style={{ color: 'var(--haomun-gold)' }}>12</div>
+                        </div>
+                    </div>
+
+                    <div className="topic-mastery" style={{ marginBottom: '40px' }}>
+                        <div className="scroll-card glass-panel runic-glow">
+                            <h3 className="scroll-header" style={{ fontSize: '1.2rem', marginBottom: '24px' }}>🌌 Topic Constellation</h3>
+                            <div style={{ marginBottom: '16px', color: 'var(--haomun-mist)', fontSize: '0.9rem' }}>
+                                Visualize the sectors of code you have manifested across all synchronized realms.
+                            </div>
+                            <TopicHeatmap data={data?.topicDistribution || {}} />
                         </div>
                     </div>
 
