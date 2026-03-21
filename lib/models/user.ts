@@ -9,7 +9,7 @@ export interface IUser extends Document {
   codechefUsername?: string
   gfgUsername?: string
   bio?: string
-  displayName?: string
+  username?: string
   avatarUrl?: string
   haomunScore: number
   masteryLevel: string
@@ -32,7 +32,7 @@ const userSchema = new Schema<IUser>({
   codechefUsername: String,
   gfgUsername: String,
   bio: { type: String, maxlength: 500 },
-  displayName: String,
+  username: { type: String, unique: true, sparse: true },
   avatarUrl: String,
   haomunScore: { type: Number, default: 0 },
   masteryLevel: { type: String, default: 'Apprentice' },

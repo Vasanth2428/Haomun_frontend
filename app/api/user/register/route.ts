@@ -19,15 +19,22 @@ export async function POST(req: NextRequest) {
       }, { status: 400 })
     }
 
-    const { email, password } = validation.data
-
+    const { email, password, username } = validation.data
     await connectDB()
-    const existing = await User.findOne({ email })
-    if (existing) {
+
+    const existingUser = await User.findOne({ email })
+    if (existingUser) {
       return Response.json({ success: false, error: 'User already exists' }, { status: 400 })
     }
 
-    const user = await User.create({ email, password })
+    if (username) {
+      const existingUsername = await User.findOne({ username })
+      if (existingUsername) {
+        return Response.json({ success: false, error: 'Moniker already claimed by another seeker' }, { status: 400 })
+      }
+    }
+
+    const user = await User.create({ email, password, username })
 
     const token = generateToken(user._id.toString())
     const { password: _, ...safeUser } = user.toObject()

@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address').trim(),
   password: z.string().min(6, 'Password must be at least 6 characters').trim(),
-  displayName: z.string().min(2, 'Display name must be at least 2 characters').trim().optional(),
+  username: z.string().min(2, 'Username must be at least 2 characters').trim().optional(),
 })
 
 export const loginSchema = z.object({
@@ -12,7 +12,7 @@ export const loginSchema = z.object({
 })
 
 export const profileUpdateSchema = z.object({
-  displayName: z.string().min(2).max(50).optional(),
+  username: z.string().min(2).max(50).optional(),
   platforms: z.object({
     leetcode: z.string().max(100).optional(),
     codeforces: z.string().max(100).optional(),
