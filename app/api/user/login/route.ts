@@ -1,5 +1,6 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
+import { cookies } from 'next/headers'
 import connectDB from '@/lib/db'
 import User from '@/lib/models/user'
 import { generateToken } from '@/lib/auth'
@@ -34,12 +35,26 @@ export async function POST(req: NextRequest) {
     const token = generateToken(user._id.toString())
     const { password: _, ...safeUser } = user.toObject()
 
+    const cookieStore = await cookies()
+    cookieStore.set('haomun_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 // 1 week
+    })
+
+    // Set UI hint cookie (non-HttpOnly)
+    cookieStore.set('haomun_logged_in', 'true', {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60
+    })
+
     return Response.json({ 
       success: true, 
-      data: { 
-        ...safeUser, 
-        token 
-      } 
+      data: safeUser
     })
   } catch (e: any) {
     return Response.json({ success: false, error: e.message }, { status: 401 })

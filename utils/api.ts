@@ -18,15 +18,11 @@ export function logout() {
 async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'POST') {
   try {
     const fullUrl = `${BASE_URL}${path}`;
-    const token = getAuthToken();
-
     const headers: Record<string, string> = {};
     if (!(payload instanceof FormData)) {
       headers['Content-Type'] = 'application/json';
     }
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    // Note: HttpOnly cookies are automatically sent by the browser
 
     const options: RequestInit = { method, headers };
 

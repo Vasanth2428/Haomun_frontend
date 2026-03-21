@@ -6,6 +6,7 @@ const rateLimitStore = new Map<string, { count: number, resetAt: number }>()
 export function middleware(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || 'anonymous'
   const path = request.nextUrl.pathname
+  const token = request.cookies.get('haomun_token')?.value
 
   // Only rate limit API routes
   if (path.startsWith('/api')) {

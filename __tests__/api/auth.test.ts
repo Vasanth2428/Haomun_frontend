@@ -8,6 +8,13 @@ vi.mock('@/lib/auth', () => ({
   generateToken: vi.fn(() => 'test_token'),
   authError: vi.fn(() => new Response(JSON.stringify({ success: false, error: 'Auth error' }), { status: 401 }))
 }))
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(() => ({
+    set: vi.fn(),
+    get: vi.fn(),
+    delete: vi.fn()
+  }))
+}))
 vi.mock('@/lib/models/user', () => ({
   default: {
     findOne: vi.fn(),

@@ -14,8 +14,11 @@ export function generateToken(userId: string): string {
 }
 
 export async function verifyAuth(req: NextRequest): Promise<IUser> {
+  const cookieToken = req.cookies.get('haomun_token')?.value
   const authHeader = req.headers.get('Authorization')
-  const token = authHeader?.replace('Bearer ', '')
+  const headerToken = authHeader?.replace('Bearer ', '')
+
+  const token = cookieToken || headerToken
 
   if (!token) {
     throw new Error('No token provided')
