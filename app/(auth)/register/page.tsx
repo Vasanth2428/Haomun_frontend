@@ -2,6 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Sign Up | HaoMun - Begin Your Ascension',
+  description: 'Begin your journey into the HaoMun Intelligence Suite. Harmonize your coding realms and forge your destiny.',
+}
+
 import { register, login } from '@/utils/api'
 import { setAuthCookie } from '@/utils/auth'
 
