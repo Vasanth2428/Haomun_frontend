@@ -15,18 +15,19 @@ interface PlatformData {
 
 async function fetchLeetCodeData(username: string): Promise<PlatformData> {
   try {
-    const query = `query {
-      userProfile(username: "${username}") {
+    const query = `query GetLeetCodeProfile($username: String!) {
+      userProfile(username: $username) {
         username
         profile { realName starRating }
         submitStats { acSubmissionNum { difficulty count } }
       }
-      userCalendar(username: "${username}") { submissionCalendar }
+      userCalendar(username: $username) { submissionCalendar }
     }`
 
-    const res = await axios.post('https://leetcode.com/graphql', { query }, {
-      headers: { 'Content-Type': 'application/json' }
-    })
+    const res = await axios.post('https://leetcode.com/graphql', 
+      { query, variables: { username } }, 
+      { headers: { 'Content-Type': 'application/json' } }
+    )
 
     if (res.data.data.userProfile) {
       const profile = res.data.data.userProfile
