@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '@/components/layout/navbar'
 import EntranceAnimation from '@/components/layout/entrance-animation'
 
@@ -9,12 +9,15 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [showEntrance, setShowEntrance] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !localStorage.getItem('hasSeenIntro')
+  const [showEntrance, setShowEntrance] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    if (typeof window !== 'undefined' && !localStorage.getItem('hasSeenIntro')) {
+      setShowEntrance(true)
     }
-    return false
-  })
+  }, [])
 
   const handleEntranceComplete = () => {
     if (typeof window !== 'undefined') {

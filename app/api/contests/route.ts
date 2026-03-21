@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 import { verifyAuth, authError } from '@/lib/auth'
 import { fetchUpcomingContests } from '@/lib/services/contest'
 import { NextRequest } from 'next/server'

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/lib/models/user'
+export const runtime = 'nodejs'
 import { verifyAuth, authError } from '@/lib/auth'
 import { fetchPlatformData } from '@/lib/services/fetch'
 import { aggregateProfiles } from '@/lib/services/analysis'

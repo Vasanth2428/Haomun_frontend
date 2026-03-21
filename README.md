@@ -1,172 +1,97 @@
-# HaoMun Frontend
+# 🏮 HaoMun: The Intelligence Pavilion
 
-The frontend component of the HaoMun project - "The Intelligence Pavilion" where ancient wisdom meets modern intelligence.
+**"Where Ancient Wisdom Meets Modern Intelligence"**
 
-## Overview
+HaoMun is a high-performance, full-stack intelligence analysis platform designed for competitive programmers. It aggregates performance data from multiple digital "realms" (LeetCode, Codeforces, CodeChef, and GeeksforGeeks) into a unified, AI-driven dashboard.
 
-This is the React/Next.js frontend application that provides the user interface for HaoMun's intelligence analysis platform. It serves as the client-side interface for interacting with backend services that analyze competitive programming performance across multiple platforms.
+---
 
-## Tech Stack
+## 🏛️ Project Pillars
 
-- **Framework**: Next.js 16.0.3
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 4.1.9
-- **UI Components**: Radix UI
-- **Icons**: Lucide React
-- **Charts**: Recharts
-- **Forms**: React Hook Form with Zod validation
-- **Theme**: next-themes for dark/light mode
+### 📊 **Intelligence Pavilion**
+The core analysis hub that fetches real-time data from disparate platforms using a hybrid engine of **GraphQL**, **REST APIs**, and **Web Scraping**. 
 
-## Features
+### ⚔️ **Contrast Hall**
+A side-by-side comparison engine that allows users to analyze their progress against peers or multi-platform benchmarks.
 
-- 📊 **Intelligence Pavilion**: Real-time coding platform analysis
-- ⚔️ **Contrast Hall**: Compare users across platforms  
-- 📚 **Archive Chamber**: Historical data visualization
-- 🛠️ **Scroll Forge**: AI-powered content generation
-- 🎨 **Modern UI**: Responsive design with theme support
-- 📈 **Analytics**: Interactive charts and insights
+### 📜 **Scroll Forge**
+An AI-powered content generation and editing suite integrated with **Google Gemini (1.5 Flash/Pro)** for deep skill analysis and report refinement.
 
-## Getting Started
+### 🏺 **Archive Chamber**
+A historical visualization layer that uses **Recharts** to map consistency through interactive heatmaps and performance trendlines.
 
-### Prerequisites
+---
 
+## 🧠 The HaoMun Oracle (Scoring Methodology)
+
+Unlike standard tracking apps, HaoMun uses a custom weighted algorithm to calculate your **HaoMun Score** and **Mastery Level (Apprentice → Sage → Master → Oracle)**:
+
+*   **Platform Breadth**: Multipliers for users who diversify their efforts across multiple platforms.
+*   **Difficulty Depth**: Weighted scores based on Easy, Medium, and Hard problem distributions.
+*   **Consistency Bonus**: Points awarded for daily activity sequences captured from the platform heatmaps.
+*   **Rating Weightage**: Direct integration of Elo-style ratings from Codeforces and CodeChef.
+
+---
+
+## 🛠️ Technical Architecture
+
+### **The Stack**
+*   **Frontend**: [Next.js 15+](https://nextjs.org/) (App Router), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS 4](https://tailwindcss.com/).
+*   **UI/UX**: [Radix UI](https://www.radix-ui.com/) for accessibility, [Lucide React](https://lucide.dev/) for iconography.
+*   **Backend**: Next.js Route Handlers (Edge-compatible).
+*   **Database**: [MongoDB](https://www.mongodb.com/) with [Mongoose](https://mongoosejs.com/) for structured storage.
+*   **Security**: Custom **JWT-based Authentication** with persistent sessions and route-protection via Next.js Middleware.
+*   **Data Aggregation Engine**:
+    *   **GraphQL**: Precise data fetching from LeetCode.
+    *   **REST**: Structured access to Codeforces API.
+    *   **Cheerio/Scraping**: High-fidelity scraping for CodeChef and GeeksforGeeks.
+*   **Artificial Intelligence**: Direct integration with **Google Gemini SDK** for personalized skill analysis.
+*   **Reporting**: Server-side **PDF generation** for performance reports.
+
+---
+
+## 🚀 Getting Started
+
+### **Prerequisites**
 - Node.js 18+ 
-- npm or pnpm
+- MongoDB Instance (Atlas or Local)
+- Google Gemini API Key (for AI features)
 
-### Installation
+### **Installation**
 
-1. **Clone the repository**
+1. **Clone & Install**
    ```bash
-   git clone <repository-url>
-   cd HaoMun_1
-   cd frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
+   git clone https://github.com/Vasanth2428/haomun-f.git
+   cd haomun-f
    npm install
-   # or
-   pnpm install
    ```
 
-3. **Environment Setup**
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Configure the following environment variable in `.env.local`:
+2. **Environment Configuration**
+   Create a `.env.local` file:
    ```env
-   NEXT_PUBLIC_BACKEND_URL=https://haomun-backend.onrender.com
+   MONGODB_URI=your_mongodb_uri
+   JWT_SECRET=your_jwt_secret
+   GEMINI_API_KEY=your_gemini_api_key
+   NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
    ```
-   
-   > **⚠️ Important**: After updating `.env.local` or environment variables, you must rebuild the project for changes to take effect:
-   > - For local development: Restart the development server (`npm run dev`)
-   > - For Vercel deployment: Trigger a new deployment after environment variable changes
-   > - Without a rebuild, the frontend will continue using cached/old environment variable values
 
-4. **Run development server**
+3. **Run Development Server**
    ```bash
    npm run dev
-   # or
-   pnpm dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
 
-### Building for Production
+## 🗺️ Roadmap to SaaS
 
-```bash
-npm run build
-npm start
-```
+HaoMun is currently a highly functional full-stack platform. Future evolutions include:
+- [ ] **Commercial Layer**: Integration with Stripe for premium "Oracle Insights".
+- [ ] **Teams & Cohorts**: Collaborative workspaces for coding communities.
+- [ ] **Mobile Mastery**: Progressive Web App (PWA) support for mobile-first tracking.
+- [ ] **Public APIs**: Allowing third-party developers to build on top of the HaoMun score.
 
-## Project Structure
+---
 
-```
-frontend/
-├── app/                    # Next.js App Router pages
-├── components/             # Reusable React components
-├── lib/                   # Utility functions
-├── public/                # Static assets
-├── styles/                # Global CSS styles
-├── utils/                 # API utilities and helpers
-├── .env.local             # Environment variables
-├── .gitignore            # Git ignore rules
-├── package.json          # Dependencies and scripts
-├── tsconfig.json         # TypeScript configuration
-├── next.config.mjs       # Next.js configuration
-├── tailwind.config.js    # Tailwind CSS configuration
-└── README.md             # This file
-```
+## 📄 License
 
-## Key Components
-
-### Pages
-- `app/page.tsx` - Main landing page
-- `app/layout.tsx` - Root layout component
-
-### Core Components
-- `components/navbar.tsx` - Navigation component
-- `components/insight-pavilion.tsx` - Platform analysis interface
-- `components/contrast-hall.tsx` - User comparison interface
-- `components/archive-chamber.tsx` - Historical data viewer
-- `components/scroll-forge.tsx` - AI content generation
-
-### Utilities
-- `utils/api.ts` - API communication with backend
-- `lib/utils.ts` - General utility functions
-
-## API Integration
-
-The frontend communicates with the HaoMun backend through REST API endpoints defined in `utils/api.ts`:
-
-- `/api/summary/generate` - Generate insights from user stats
-- `/api/compare` - Compare multiple users
-- `/api/scrollforge/edit` - AI-powered content editing
-- `/api/report/create` - Generate PDF reports
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_BACKEND_URL` | Backend API base URL | `https://haomun-backend.onrender.com` |
-
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-
-### Code Style
-
-The project uses:
-- TypeScript for type safety
-- ESLint for code linting
-- Prettier for code formatting (recommended)
-
-## Deployment
-
-### Vercel (Recommended)
-
-1. Push to GitHub repository
-2. Connect repository to Vercel
-3. Configure environment variables in Vercel dashboard
-4. Deploy
-
-### Other Platforms
-
-The built application in the `out/` directory can be deployed to any static hosting service.
-
-## Contributing
-
-1. Follow the existing code style and TypeScript conventions
-2. Ensure all components are responsive and accessible
-3. Test on both light and dark themes
-4. Update documentation as needed
-
-## License
-
-This project is part of the HaoMun intelligence analysis platform.
+This project is part of the HaoMun intelligence analysis suite. All rights reserved.

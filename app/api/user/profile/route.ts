@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/lib/models/user'
@@ -10,15 +11,26 @@ export async function GET(req: NextRequest) {
   } catch { return authError() }
 }
 
+import { profileUpdateSchema } from '@/lib/validations'
+
 export async function PATCH(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
-    const { username, bio, platforms } = await req.json()
+    const body = await req.json()
+    const validation = profileUpdateSchema.safeParse(body)
 
+    if (!validation.success) {
+      return Response.json({ 
+        success: false, 
+        error: validation.error.errors[0].message 
+      }, { status: 400 })
+    }
+
+    const { displayName, platforms, avatarUrl } = validation.data
     await connectDB()
     const updates: any = {}
-    if (username) updates.displayName = username
-    if (bio) updates.bio = bio
+    if (displayName) updates.displayName = displayName
+    if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl
     if (platforms) {
       if (platforms.leetcode) updates.leetcodeUsername = platforms.leetcode
       if (platforms.codeforces) updates.codeforcesUsername = platforms.codeforces

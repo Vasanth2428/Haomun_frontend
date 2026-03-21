@@ -3,7 +3,11 @@ import { NextRequest } from 'next/server'
 import connectDB from '@/lib/db'
 import User, { IUser } from '@/lib/models/user'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret'
+const JWT_SECRET = process.env.JWT_SECRET!
+
+if (!JWT_SECRET) {
+  throw new Error('Please define the JWT_SECRET environment variable inside .env.local')
+}
 
 export function generateToken(userId: string): string {
   return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '7d' })

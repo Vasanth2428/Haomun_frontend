@@ -1,0 +1,65 @@
+.nexusGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.listContainer {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.friendItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.friendItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(4px);
+}
+
+.friendInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatarPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--haomun-charcoal);
+  border: 1px solid var(--haomun-gold-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--haomun-gold-bright);
+  font-family: 'Cinzel';
+  font-weight: bold;
+}
+
+.friendName {
+  font-size: 1rem;
+  color: var(--haomun-scroll);
+  font-weight: 600;
+}
+
+.friendLevel {
+  font-size: 0.8rem;
+  color: var(--haomun-mist);
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .nexusGrid {
+    grid-template-columns: 1fr;
+  }
+}

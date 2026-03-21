@@ -1,21 +1,24 @@
+export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import { verifyAuth, authError } from '@/lib/auth'
 import { editScrollForge } from '@/lib/services/ai'
 
+import { scrollForgeEditSchema } from '@/lib/validations'
+
 export async function POST(req: NextRequest) {
   try {
     await verifyAuth(req)
-    const { draft, instruction } = await req.json()
+    const body = await req.json()
+    const validation = scrollForgeEditSchema.safeParse(body)
 
-    if (!draft || typeof draft !== 'string' || !draft.trim()) {
-      return Response.json({ success: false, error: 'Draft text is required' }, { status: 400 })
+    if (!validation.success) {
+      return Response.json({ 
+        success: false, 
+        error: validation.error.errors[0].message 
+      }, { status: 400 })
     }
-    if (!instruction || typeof instruction !== 'string' || !instruction.trim()) {
-      return Response.json({ success: false, error: 'Instruction is required' }, { status: 400 })
-    }
-    if (draft.length > 10000) {
-      return Response.json({ success: false, error: 'Draft too long (max 10,000 chars)' }, { status: 400 })
-    }
+
+    const { draft, instruction } = validation.data
 
     const result = await editScrollForge(draft, instruction)
     return Response.json({ success: true, data: result })

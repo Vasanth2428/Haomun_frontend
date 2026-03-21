@@ -7,7 +7,8 @@ const TOKEN_KEY = 'haomun_token'
 
 export function setAuthCookie(token: string) {
   if (typeof document !== 'undefined') {
-    document.cookie = `${TOKEN_KEY}=${token}; path=/; SameSite=Strict; Secure`
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    document.cookie = `${TOKEN_KEY}=${token}; path=/; SameSite=Strict${isLocal ? '' : '; Secure'}`
   }
   // Also set localStorage for backward compat during migration
   if (typeof window !== 'undefined') {

@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/lib/models/user'

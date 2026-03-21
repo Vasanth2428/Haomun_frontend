@@ -43,6 +43,7 @@ export default function Navbar({ onTriggerIntro }: NavbarProps) {
   const navLinks = [
     { href: '/pavilion', label: 'Pavilion', icon: '✦' },
     { href: '/sanctum', label: 'Sanctum', icon: '⛩', auth: true },
+    { href: '/social', label: 'Nexus', icon: '👥', auth: true },
     { href: '/contrast', label: 'Contrast', icon: '☯' },
     { href: '/contests', label: 'Trials', icon: '⚔' },
     { href: '/archive', label: 'Archive', icon: '📜' },

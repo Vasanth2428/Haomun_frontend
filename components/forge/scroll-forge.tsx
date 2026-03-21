@@ -43,6 +43,22 @@ export default function ScrollForge({ data }: ScrollForgeProps) {
     setReleasing(false)
   }
 
+  const [preserving, setPreserving] = useState(false)
+  const handlePreserve = async () => {
+    setPreserving(true)
+    setStatus('Preserving manifestation in the Archive Chamber...')
+    const title = `Manifestation - ${new Date().toLocaleDateString()}`
+    const { saveToArchive } = await import('@/utils/api') // Dynamic import to be safe if needed, but it's already imported
+    const result = await (await import('@/utils/api')).saveToArchive(title, content)
+    
+    if (result.success) {
+      setStatus('Manifestation successfully preserved in the Archive.')
+    } else {
+      setStatus(`Preservation failed: ${result.error}`)
+    }
+    setPreserving(false)
+  }
+
   return (
     <div className={`pavilion-container ${styles.fadeIn}`}>
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
@@ -102,6 +118,14 @@ export default function ScrollForge({ data }: ScrollForgeProps) {
                 disabled={scribing}
               >
                 <span>⚖</span> Stern Judgement
+              </button>
+              <button
+                className="btn btn-secondary"
+                style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--haomun-gold)' }}
+                onClick={handlePreserve}
+                disabled={preserving || scribing}
+              >
+                <span>🏺</span> Preserve in Archive
               </button>
             </div>
           </div>

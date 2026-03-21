@@ -1,19 +1,25 @@
+export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import { verifyAuth, authError } from '@/lib/auth'
 import { getBatchPlatformStats } from '@/lib/services/fetch'
 import { generateSummary } from '@/lib/services/ai'
 
+import { compareRequestSchema } from '@/lib/validations'
+
 export async function POST(req: NextRequest) {
   try {
     await verifyAuth(req)
-    const { users } = await req.json()
+    const body = await req.json()
+    const validation = compareRequestSchema.safeParse(body)
 
-    if (!Array.isArray(users) || users.length === 0) {
-      return Response.json({ success: false, error: 'Users array is required' }, { status: 400 })
+    if (!validation.success) {
+      return Response.json({ 
+        success: false, 
+        error: validation.error.errors[0].message 
+      }, { status: 400 })
     }
-    if (users.length > 5) {
-      return Response.json({ success: false, error: 'Maximum 5 users' }, { status: 400 })
-    }
+
+    const { users } = validation.data
 
     const platform = users[0]?.platform || 'leetcode'
     const results = await getBatchPlatformStats(users)

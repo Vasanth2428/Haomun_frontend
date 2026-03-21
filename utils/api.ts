@@ -15,7 +15,7 @@ export function logout() {
   clearAuthCookie();
 }
 
-async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 'PATCH' | 'PUT' = 'POST') {
+async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'POST') {
   try {
     const fullUrl = `${BASE_URL}${path}`;
     const token = getAuthToken();
@@ -79,6 +79,27 @@ export async function getProfile() {
   return apiRequest('/api/user/profile', null, 'GET');
 }
 
+export async function getFriends() {
+  return apiRequest('/api/user/friends', null, 'GET');
+}
+
+export async function addFriend(friendId: string) {
+  return apiRequest('/api/user/friends', { friendId }, 'POST');
+}
+
+export async function removeFriend(friendId: string) {
+  return apiRequest(`/api/user/friends?friendId=${friendId}`, null, 'DELETE');
+}
+
+export async function searchUsers(query: string) {
+  return apiRequest(`/api/user/search?q=${query}`, null, 'GET');
+}
+
+export async function getLeaderboard(filter?: string) {
+  const path = filter ? `/api/user/leaderboard?filter=${filter}` : '/api/user/leaderboard';
+  return apiRequest(path, null, 'GET');
+}
+
 export async function updateProfile(profileData: any) {
   return apiRequest('/api/user/profile', profileData, 'POST');
 }
@@ -117,6 +138,18 @@ export async function getContests() {
 
 export async function createReportPdf(params: any) {
   return apiRequest('/api/pdf', params, 'POST');
+}
+
+export async function getArchive() {
+  return apiRequest('/api/user/archive', null, 'GET');
+}
+
+export async function getActivity() {
+  return apiRequest('/api/user/activity', null, 'GET');
+}
+
+export async function saveToArchive(title: string, content: string) {
+  return apiRequest('/api/user/archive', { title, content }, 'POST');
 }
 
 // ── Legacy aliases ──────────────────────────────────────────────

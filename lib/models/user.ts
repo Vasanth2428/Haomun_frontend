@@ -17,6 +17,7 @@ export interface IUser extends Document {
   lastAnalysisDate?: Date
   friends: string[]
   savedDrafts: string[]
+  archives: { title: string; content: string; timestamp: Date }[]
   createdAt: Date
   comparePassword(candidatePassword: string): Promise<boolean>
 }
@@ -35,16 +36,20 @@ const userSchema = new Schema<IUser>({
   masteryLevel: { type: String, default: 'Apprentice' },
   lastSkillAnalysis: Schema.Types.Mixed,
   lastAnalysisDate: Date,
-  friends: [String],
+  friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   savedDrafts: [String],
+  archives: [{
+    title: { type: String, required: true },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now }
+  }],
   createdAt: { type: Date, default: Date.now },
 })
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next()
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return
   this.password = await bcrypt.hash(this.password, 10)
-  next()
 })
 
 // Compare password method

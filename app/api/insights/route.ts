@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import { verifyAuth, authError } from '@/lib/auth'
 import { fetchPlatformData } from '@/lib/services/fetch'
