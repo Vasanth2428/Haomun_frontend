@@ -26,8 +26,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ success: false, error: 'User already exists' }, { status: 400 })
     }
 
-    const user = new User({ email, password })
-    await user.save()
+    const user = await User.create({ email, password })
 
     const token = generateToken(user._id.toString())
     return Response.json({ 
