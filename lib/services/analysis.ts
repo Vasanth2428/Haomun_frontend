@@ -24,10 +24,14 @@ export function calculateHaoMunScore(profiles: any[]) {
   profiles.forEach(p => {
     if (!p) return
     platformCount++
-    totalSolved += parseInt(p.solvedProblems) || 0
-    const rating = parseInt(p.rating) || 0
+    const solved = parseInt(p.solvedProblems) || 0
+    totalSolved += solved
+    
+    const rating = Math.max(0, parseInt(p.rating) || 0)
     if (rating > maxRating) maxRating = rating
-    consistencyBonus += (Array.isArray(p.heatmapData) ? p.heatmapData.length : 0) * 2
+    
+    const heats = Array.isArray(p.heatmapData) ? p.heatmapData.length : 0
+    consistencyBonus += heats * 2
   })
 
   totalSolved = Math.max(0, totalSolved)
@@ -36,21 +40,23 @@ export function calculateHaoMunScore(profiles: any[]) {
 
   const baseScore = (totalSolved * 10) + (maxRating / 2) + consistencyBonus
   const multiplier = 1 + (platformCount > 1 ? (platformCount - 1) * 0.15 : 0)
-  const finalScore = Math.round(baseScore * multiplier) || 0
+  const score = Math.round(baseScore * multiplier) || 0
 
   let level = 'Apprentice'
-  if (finalScore >= 5000) level = 'Oracle'
-  else if (finalScore >= 2000) level = 'Master'
-  else if (finalScore >= 500) level = 'Sage'
+  if (score >= 10000) level = 'Ethereal'
+  else if (score >= 5000) level = 'Oracle'
+  else if (score >= 2000) level = 'Master'
+  else if (score >= 500) level = 'Sage'
 
   return {
-    score: finalScore, level,
+    score, 
+    level,
     metrics: { totalSolved, maxRating, consistencyBonus, platforms: platformCount },
     completeness: {
-      leetcode: profiles.some(p => p.platform === 'leetcode'),
-      codeforces: profiles.some(p => p.platform === 'codeforces'),
-      codechef: profiles.some(p => p.platform === 'codechef'),
-      gfg: profiles.some(p => p.platform === 'gfg' || p.platform === 'geeksforgeeks'),
+      leetcode: profiles.some(p => p?.platform === 'leetcode'),
+      codeforces: profiles.some(p => p?.platform === 'codeforces'),
+      codechef: profiles.some(p => p?.platform === 'codechef'),
+      gfg: profiles.some(p => p?.platform === 'gfg' || p?.platform === 'geeksforgeeks'),
       score: Math.round((platformCount / 4) * 100),
     },
   }

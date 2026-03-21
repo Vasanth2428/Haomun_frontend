@@ -41,12 +41,13 @@ export async function POST(req: NextRequest) {
       return Response.json({ success: false, error: 'User not found' }, { status: 404 })
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $addToSet: { friends: friendId } },
-      { new: true }
-    ).populate('friends', 'displayName email avatarUrl haomunScore masteryLevel')
+    // Bidirectional add
+    await Promise.all([
+      User.findByIdAndUpdate(user._id, { $addToSet: { friends: friendId } }),
+      User.findByIdAndUpdate(friendId, { $addToSet: { friends: user._id } })
+    ])
 
+    const updatedUser = await User.findById(user._id).populate('friends', 'displayName email avatarUrl haomunScore masteryLevel')
     return Response.json({ success: true, data: updatedUser?.friends })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
@@ -65,12 +66,13 @@ export async function DELETE(req: NextRequest) {
     }
 
     await connectDB()
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $pull: { friends: friendId } },
-      { new: true }
-    ).populate('friends', 'displayName email avatarUrl haomunScore masteryLevel')
+    // Bidirectional remove
+    await Promise.all([
+      User.findByIdAndUpdate(user._id, { $pull: { friends: friendId } }),
+      User.findByIdAndUpdate(friendId, { $pull: { friends: user._id } })
+    ])
 
+    const updatedUser = await User.findById(user._id).populate('friends', 'displayName email avatarUrl haomunScore masteryLevel')
     return Response.json({ success: true, data: updatedUser?.friends })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()

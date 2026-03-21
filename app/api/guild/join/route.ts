@@ -14,25 +14,24 @@ export async function POST(req: NextRequest) {
 
     await connectDB()
 
-    const dbUser = await User.findById(user._id)
-    if (dbUser?.guildId) {
-      return Response.json({ success: false, error: 'You are already in a guild' }, { status: 400 })
-    }
+    // Atomic join: Only update if user is NOT in a guild
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: user._id, guildId: { $exists: false } },
+      { guildId },
+      { new: true }
+    )
 
-    const guild = await Guild.findById(guildId)
-    if (!guild) {
-      return Response.json({ success: false, error: 'Guild not found' }, { status: 404 })
+    if (!updatedUser) {
+      return Response.json({ success: false, error: 'You are already in a guild or join failed' }, { status: 400 })
     }
 
     // Add user to guild and update total score
     await Guild.findByIdAndUpdate(guildId, {
-      $push: { members: user._id },
+      $addToSet: { members: user._id },
       $inc: { totalScore: user.haomunScore || 0 }
     })
 
-    await User.findByIdAndUpdate(user._id, { guildId })
-
-    return Response.json({ success: true, message: `Joined ${guild.name}` })
+    return Response.json({ success: true, message: `Joined the guild successfully` })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })

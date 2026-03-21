@@ -21,16 +21,22 @@ export async function verifyAuth(req: NextRequest): Promise<IUser> {
     throw new Error('No token provided')
   }
 
-  const decoded = jwt.verify(token, JWT_SECRET) as { id: string }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string }
 
-  await connectDB()
-  const user = await User.findById(decoded.id)
+    await connectDB()
+    const user = await User.findById(decoded.id)
 
-  if (!user) {
-    throw new Error('User not found')
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    return user
+  } catch (err: any) {
+    if (err.name === 'TokenExpiredError') throw new Error('Session expired')
+    if (err.name === 'JsonWebTokenError') throw new Error('Invalid session')
+    throw err
   }
-
-  return user
 }
 
 export function authError() {
