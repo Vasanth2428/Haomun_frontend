@@ -15,7 +15,7 @@ export function logout() {
   clearAuthCookie();
 }
 
-async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'POST') {
+async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'POST', signal?: AbortSignal) {
   try {
     const fullUrl = `${BASE_URL}${path}`;
     const headers: Record<string, string> = {};
@@ -24,7 +24,7 @@ async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 
     }
     // Note: HttpOnly cookies are automatically sent by the browser
 
-    const options: RequestInit = { method, headers };
+    const options: RequestInit = { method, headers, signal };
 
     if (payload && method !== 'GET') {
       options.body = payload instanceof FormData ? payload : JSON.stringify(payload);
@@ -53,11 +53,12 @@ async function apiRequest(path: string, payload?: any, method: 'GET' | 'POST' | 
     }
 
     const data = await response.json();
-    return { success: true, data };
+    return { success: true, data, status: response.status };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      status: 0
     };
   }
 }
@@ -71,12 +72,12 @@ export async function login(credentials: any) {
   return apiRequest('/api/user/login', credentials);
 }
 
-export async function getProfile() {
-  return apiRequest('/api/user/profile', null, 'GET');
+export async function getProfile(signal?: AbortSignal) {
+  return apiRequest('/api/user/profile', null, 'GET', signal);
 }
 
-export async function getFriends() {
-  return apiRequest('/api/user/friends', null, 'GET');
+export async function getFriends(signal?: AbortSignal) {
+  return apiRequest('/api/user/friends', null, 'GET', signal);
 }
 
 export async function addFriend(friendId: string) {
@@ -87,13 +88,13 @@ export async function removeFriend(friendId: string) {
   return apiRequest(`/api/user/friends?friendId=${friendId}`, null, 'DELETE');
 }
 
-export async function searchUsers(query: string) {
-  return apiRequest(`/api/user/search?q=${query}`, null, 'GET');
+export async function searchUsers(query: string, signal?: AbortSignal) {
+  return apiRequest(`/api/user/search?q=${query}`, null, 'GET', signal);
 }
 
-export async function getLeaderboard(filter?: string) {
+export async function getLeaderboard(filter?: string, signal?: AbortSignal) {
   const path = filter ? `/api/user/leaderboard?filter=${filter}` : '/api/user/leaderboard';
-  return apiRequest(path, null, 'GET');
+  return apiRequest(path, null, 'GET', signal);
 }
 
 export async function updateProfile(profileData: any) {
@@ -109,13 +110,21 @@ export async function getCodeforcesStats(username: string) {
   return apiRequest(`/api/insights?platform=codeforces&username=${encodeURIComponent(username)}`, null, 'GET');
 }
 
-export async function aggregateProfiles(platforms: any) {
-  return apiRequest('/api/user/sanctum', null, 'GET');
+export async function getSanctumData(signal?: AbortSignal, platforms?: Record<string, string>) {
+  const params = new URLSearchParams();
+  if (platforms) {
+    Object.entries(platforms).forEach(([key, val]) => {
+      if (val) params.append(key, val);
+    });
+  }
+  const qs = params.toString();
+  const path = qs ? `/api/user/sanctum?${qs}` : '/api/user/sanctum';
+  return apiRequest(path, null, 'GET', signal);
 }
 
 // ── Insights & AI ───────────────────────────────────────────────
-export async function getSkillAnalysis() {
-  return apiRequest('/api/insights/skill-analysis', null, 'GET');
+export async function getSkillAnalysis(signal?: AbortSignal) {
+  return apiRequest('/api/insights/skill-analysis', null, 'GET', signal);
 }
 
 export async function generateSummary(platformData: any) {
@@ -128,20 +137,20 @@ export async function compareAllies(users: any[]) {
 }
 
 // ── Tools ───────────────────────────────────────────────────────
-export async function getContests() {
-  return apiRequest('/api/contests', null, 'GET');
+export async function getContests(signal?: AbortSignal) {
+  return apiRequest('/api/contests', null, 'GET', signal);
 }
 
 export async function createReportPdf(params: any) {
   return apiRequest('/api/pdf', params, 'POST');
 }
 
-export async function getArchive() {
-  return apiRequest('/api/user/archive', null, 'GET');
+export async function getArchive(signal?: AbortSignal) {
+  return apiRequest('/api/user/archive', null, 'GET', signal);
 }
 
-export async function getActivity() {
-  return apiRequest('/api/user/activity', null, 'GET');
+export async function getActivity(signal?: AbortSignal) {
+  return apiRequest('/api/user/activity', null, 'GET', signal);
 }
 
 export async function saveToArchive(title: string, content: string) {
@@ -149,8 +158,8 @@ export async function saveToArchive(title: string, content: string) {
 }
 
 // ── Guilds ─────────────────────────────────────────────────────
-export async function getGuilds() {
-  return apiRequest('/api/guild/list', null, 'GET');
+export async function getGuilds(signal?: AbortSignal) {
+  return apiRequest('/api/guild/list', null, 'GET', signal);
 }
 
 export async function createGuild(guildData: { name: string; description: string; emblem?: string }) {

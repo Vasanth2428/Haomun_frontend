@@ -17,14 +17,22 @@ export default function SocialNexus() {
   const [status, setStatus] = useState('')
 
   useEffect(() => {
-    fetchFriends()
+    const controller = new AbortController()
+    fetchFriends(controller.signal)
+    return () => controller.abort()
   }, [])
 
-  const fetchFriends = async () => {
+  const fetchFriends = async (signal?: AbortSignal) => {
     setLoading(true)
-    const result = await getFriends()
-    if (result.success) setFriends(result.data)
-    setLoading(false)
+    try {
+      const result = await getFriends(signal)
+      if (result.success) setFriends(result.data)
+    } catch (err: any) {
+      if (err.name === 'AbortError') return
+      setStatus(`Failed resonance: ${err.message}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSearch = async () => {
@@ -101,9 +109,9 @@ export default function SocialNexus() {
               friends.map(friend => (
                 <div key={friend._id} className={styles.friendItem}>
                   <div className={styles.friendInfo}>
-                    <div className={styles.avatarPlaceholder}>{friend.displayName?.[0] || '👤'}</div>
+                    <div className={styles.avatarPlaceholder}>{friend.username?.[0] || '👤'}</div>
                     <div>
-                      <div className={styles.friendName}>{friend.displayName}</div>
+                      <div className={styles.friendName}>{friend.username}</div>
                       <div className={styles.friendLevel}>{friend.masteryLevel} • {friend.haomunScore} pts</div>
                     </div>
                   </div>
@@ -138,9 +146,9 @@ export default function SocialNexus() {
               searchResults.map(user => (
                 <div key={user._id} className={styles.friendItem}>
                   <div className={styles.friendInfo}>
-                    <div className={styles.avatarPlaceholder}>{user.displayName?.[0] || '👤'}</div>
+                    <div className={styles.avatarPlaceholder}>{user.username?.[0] || '👤'}</div>
                     <div>
-                      <div className={styles.friendName}>{user.displayName}</div>
+                      <div className={styles.friendName}>{user.username}</div>
                       <div className={styles.friendLevel}>{user.masteryLevel} • {user.haomunScore} pts</div>
                     </div>
                   </div>

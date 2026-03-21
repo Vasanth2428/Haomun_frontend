@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PLATFORMS } from './constants'
 
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address').trim(),
@@ -14,17 +15,17 @@ export const loginSchema = z.object({
 export const profileUpdateSchema = z.object({
   username: z.string().min(2).max(50).optional(),
   platforms: z.object({
-    leetcode: z.string().max(100).optional(),
-    codeforces: z.string().max(100).optional(),
-    codechef: z.string().max(100).optional(),
-    geeksforgeeks: z.string().max(100).optional(),
+    [PLATFORMS.LEETCODE]: z.string().max(100).optional(),
+    [PLATFORMS.CODEFORCES]: z.string().max(100).optional(),
+    [PLATFORMS.CODECHEF]: z.string().max(100).optional(),
+    [PLATFORMS.GFG]: z.string().max(100).optional(),
   }).optional(),
   avatarUrl: z.string().url().max(500).optional().or(z.literal('')),
 })
 
 export const generateSummarySchema = z.object({
   username: z.string().min(1, 'Username is required').max(100),
-  platform: z.enum(['leetcode', 'codeforces', 'codechef']),
+  platform: z.enum([PLATFORMS.LEETCODE, PLATFORMS.CODEFORCES, PLATFORMS.CODECHEF]),
   timeWindow: z.union([z.string(), z.number()]).optional(),
 })
 
@@ -45,6 +46,6 @@ export const friendSchema = z.object({
 export const compareRequestSchema = z.object({
   users: z.array(z.object({
     username: z.string().min(1),
-    platform: z.enum(['leetcode', 'codeforces', 'codechef', 'geeksforgeeks'])
+    platform: z.enum([PLATFORMS.LEETCODE, PLATFORMS.CODEFORCES, PLATFORMS.CODECHEF, PLATFORMS.GFG])
   })).min(1).max(5)
 })

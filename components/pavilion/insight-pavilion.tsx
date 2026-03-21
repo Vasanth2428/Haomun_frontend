@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { unveilInsight } from '@/utils/api'
+import { PLATFORMS } from '@/lib/constants'
 import DifficultyChart from '@/components/charts/DifficultyChart'
 import styles from './insight-pavilion.module.css'
 
@@ -11,7 +12,7 @@ interface InsightPavilionProps {
 
 export default function InsightPavilion({ onForge }: InsightPavilionProps) {
   const [username, setUsername] = useState('')
-  const [platform, setPlatform] = useState('leetcode')
+  const [platform, setPlatform] = useState(PLATFORMS.LEETCODE)
   const [timeWindow, setTimeWindow] = useState('30')
   const [insight, setInsight] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -77,11 +78,11 @@ export default function InsightPavilion({ onForge }: InsightPavilionProps) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="form-group">
               <label className="form-label">Realm (Platform)</label>
-              <select className="form-select" value={platform} onChange={(e) => setPlatform(e.target.value)}>
-                <option value="leetcode">LeetCode</option>
-                <option value="codeforces">Codeforces</option>
-                <option value="codechef">CodeChef</option>
-                <option value="geeksforgeeks">GFG</option>
+              <select className="form-select" value={platform} onChange={(e) => setPlatform(e.target.value as any)}>
+                <option value={PLATFORMS.LEETCODE}>LeetCode</option>
+                <option value={PLATFORMS.CODEFORCES}>Codeforces</option>
+                <option value={PLATFORMS.CODECHEF}>CodeChef</option>
+                <option value={PLATFORMS.GFG}>GFG</option>
               </select>
             </div>
             <div className="form-group">

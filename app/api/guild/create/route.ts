@@ -22,12 +22,8 @@ export async function POST(req: NextRequest) {
       return Response.json({ success: false, error: 'Guild name must be at least 3 characters' }, { status: 400 })
     }
 
-    // Check if guild name exists
-    const existing = await Guild.findOne({ name: sanitizedName })
-    if (existing) {
-      return Response.json({ success: false, error: 'Guild name already taken' }, { status: 400 })
-    }
-
+    // Skip the findOne check — it's a TOCTOU race.
+    // Rely on the unique index; catch duplicate key error below.
     const guild = await Guild.create({
       name: sanitizedName,
       description: (description || '').substring(0, 200),
@@ -52,6 +48,10 @@ export async function POST(req: NextRequest) {
     return Response.json({ success: true, data: guild })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
+    // Catch MongoDB duplicate key error (unique index on guild name)
+    if (e.code === 11000) {
+      return Response.json({ success: false, error: 'Guild name already taken' }, { status: 400 })
+    }
     return Response.json({ success: false, error: e.message }, { status: 500 })
   }
 }

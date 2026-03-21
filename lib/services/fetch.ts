@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { PLATFORMS } from '../constants'
 
 interface PlatformData {
   platform: string
@@ -47,7 +48,7 @@ async function fetchLeetCodeData(username: string): Promise<PlatformData> {
       } catch { /* ignore */ }
 
       return {
-        platform: 'leetcode',
+        platform: PLATFORMS.LEETCODE,
         username: profile.username,
         solvedProblems,
         difficultyBreakdown: submissions.reduce((acc: any, s: any) => {
@@ -64,7 +65,7 @@ async function fetchLeetCodeData(username: string): Promise<PlatformData> {
 
   // Fallback
   return {
-    platform: 'leetcode', username, solvedProblems: 0,
+    platform: PLATFORMS.LEETCODE, username, solvedProblems: 0,
     difficultyBreakdown: { easy: 0, medium: 0, hard: 0 },
     heatmapData: [], topicDistribution: {}, performanceTrends: [],
     source: 'fallback-static', note: 'API failed'
@@ -89,7 +90,7 @@ async function fetchCodeforcesData(username: string): Promise<PlatformData> {
   }
 
   return {
-    platform: 'codeforces', username: user.handle, solvedProblems: solvedSet.size,
+    platform: PLATFORMS.CODEFORCES, username: user.handle, solvedProblems: solvedSet.size,
     difficultyBreakdown: {}, rating: user.rating || 0,
     heatmapData: Object.entries(heatmapMap).map(([date, count]) => ({ date, count })).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30),
     topicDistribution: {}, performanceTrends: [{ rating: user.rating || 0 }],
@@ -99,41 +100,46 @@ async function fetchCodeforcesData(username: string): Promise<PlatformData> {
 
 async function fetchCodeChefData(username: string): Promise<PlatformData | null> {
   try {
-    const res = await axios.get(`https://www.codechef.com/users/${username}`)
-    const cheerio = await import('cheerio')
-    const $ = cheerio.load(res.data)
-    const rating = $('.rating-number').first().text() || '0'
+    // CodeChef is now client-rendered; HTML scraping no longer works.
+    // Using community API that returns JSON directly.
+    const res = await axios.get(`https://cp-rating-api.vercel.app/codechef/${encodeURIComponent(username)}`)
+    const data = res.data
+    const rating = parseInt(data.rating) || 0
     return {
-      platform: 'codechef', username, solvedProblems: 0,
-      difficultyBreakdown: {}, rating: parseInt(rating) || 0,
+      platform: PLATFORMS.CODECHEF, username, solvedProblems: 0,
+      difficultyBreakdown: {}, rating,
       heatmapData: [], topicDistribution: {},
-      performanceTrends: [{ rating: parseInt(rating) || 0 }],
-      source: 'scraping'
+      performanceTrends: [{ rating }],
+      source: 'api'
     }
   } catch { return null }
 }
 
 async function fetchGFGData(username: string): Promise<PlatformData | null> {
   try {
-    const res = await axios.get(`https://auth.geeksforgeeks.org/user/${username}/practice/`)
-    const cheerio = await import('cheerio')
-    const $ = cheerio.load(res.data)
-    const solved = $('.scoreCard_head_left--score').first().text() || '0'
+    // GFG is now client-rendered; HTML scraping no longer works.
+    // Using GFG's internal practice stats API.
+    const res = await axios.get(
+      `https://www.geeksforgeeks.org/api/scorecard/${encodeURIComponent(username)}`
+    )
+    const data = res.data
+    const solved = parseInt(data?.totalProblemsSolved ?? data?.totalSolved ?? '0') || 0
     return {
-      platform: 'gfg', username, solvedProblems: parseInt(solved) || 0,
+      platform: PLATFORMS.GFG, username, solvedProblems: solved,
       difficultyBreakdown: {}, heatmapData: [],
       topicDistribution: {}, performanceTrends: [], rating: 0,
-      source: 'scraping'
+      source: 'api'
     }
   } catch { return null }
 }
 
+
 export async function fetchPlatformData(platform: string, username: string): Promise<PlatformData | null> {
   switch (platform) {
-    case 'leetcode': return fetchLeetCodeData(username)
-    case 'codeforces': return fetchCodeforcesData(username)
-    case 'codechef': return fetchCodeChefData(username)
-    case 'gfg': case 'geeksforgeeks': return fetchGFGData(username)
+    case PLATFORMS.LEETCODE: return fetchLeetCodeData(username)
+    case PLATFORMS.CODEFORCES: return fetchCodeforcesData(username)
+    case PLATFORMS.CODECHEF: return fetchCodeChefData(username)
+    case PLATFORMS.GFG: case 'gfg': return fetchGFGData(username)
     default: throw new Error(`Unsupported platform: ${platform}`)
   }
 }
@@ -141,7 +147,7 @@ export async function fetchPlatformData(platform: string, username: string): Pro
 export async function getBatchPlatformStats(users: { username: string; platform: string }[]) {
   return Promise.all(users.map(async (u) => {
     try {
-      const data = await fetchPlatformData(u.platform || 'leetcode', u.username)
+      const data = await fetchPlatformData(u.platform || PLATFORMS.LEETCODE, u.username)
       return { success: true, data }
     } catch (e: any) {
       return { success: false, error: e.message, username: u.username }

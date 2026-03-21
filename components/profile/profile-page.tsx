@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { getProfile, aggregateProfiles, updateProfile } from '@/utils/api'
+import { getSanctumData, updateProfile } from '@/utils/api'
+import { PLATFORMS } from '@/lib/constants'
+import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
 import styles from './profile-page.module.css'
 
@@ -10,16 +12,16 @@ type Tab = 'identity' | 'personal' | 'security'
 const DEFAULT_AVATAR = 'https://i.imgur.com/8N0vH2x.png'
 
 export default function ProfilePage() {
+    const { user, refreshUser } = useAuth()
     const [activeTab, setActiveTab] = useState<Tab>('identity')
-    const [user, setUser] = useState<any>(null)
     const avatarInputRef = useRef<HTMLInputElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [platforms, setPlatforms] = useState({
-        leetcode: '',
-        codeforces: '',
-        codechef: '',
-        geeksforgeeks: ''
+        [PLATFORMS.LEETCODE]: '',
+        [PLATFORMS.CODEFORCES]: '',
+        [PLATFORMS.CODECHEF]: '',
+        [PLATFORMS.GFG]: ''
     })
     const [personalInfo, setPersonalInfo] = useState({
         username: '',
@@ -41,38 +43,30 @@ export default function ProfilePage() {
     const [message, setMessage] = useState({ type: '', text: '' })
 
     useEffect(() => {
-        const fetchUserData = async () => {
-            setLoading(true)
-            const response = await getProfile()
-            if (response.success) {
-                const userData = response.data.user || response.data
-                setUser(userData)
-                setPersonalInfo({
-                    username: userData.username || '',
-                    email: userData.email || '',
-                    bio: userData.bio || '',
-                    avatarUrl: userData.avatarUrl || ''
+        if (user) {
+            setPersonalInfo({
+                username: user.username || '',
+                email: user.email || '',
+                bio: user.bio || '',
+                avatarUrl: user.avatarUrl || ''
+            })
+            if (user.platforms) {
+                setPlatforms({
+                    [PLATFORMS.LEETCODE]: user.platforms[PLATFORMS.LEETCODE] || '',
+                    [PLATFORMS.CODEFORCES]: user.platforms[PLATFORMS.CODEFORCES] || '',
+                    [PLATFORMS.CODECHEF]: user.platforms[PLATFORMS.CODECHEF] || '',
+                    [PLATFORMS.GFG]: user.platforms[PLATFORMS.GFG] || ''
                 })
-                if (userData.platforms) {
-                    setPlatforms({
-                        leetcode: userData.platforms.leetcode || '',
-                        codeforces: userData.platforms.codeforces || '',
-                        codechef: userData.platforms.codechef || '',
-                        geeksforgeeks: userData.platforms.geeksforgeeks || ''
-                    })
-                }
             }
-            setLoading(false)
         }
-        fetchUserData()
-    }, [])
+    }, [user])
 
     const handleSyncSave = async (e: React.FormEvent) => {
         e.preventDefault()
         setSaving(true)
         setMessage({ type: '', text: '' })
 
-        const verifyResult = await aggregateProfiles(platforms)
+        const verifyResult = await getSanctumData()
         if (!verifyResult.success) {
             setMessage({ type: 'error', text: verifyResult.error || 'Failed to verify platform seals' })
             setSaving(false)
@@ -82,7 +76,7 @@ export default function ProfilePage() {
         const updateResult = await updateProfile({ platforms })
         if (updateResult.success) {
             setMessage({ type: 'success', text: 'Identity Seal synchronized eternally!' })
-            setUser({ ...user, platforms })
+            refreshUser()
         } else {
             setMessage({ type: 'error', text: updateResult.error || 'Failed to record synchronization' })
         }
@@ -108,10 +102,9 @@ export default function ProfilePage() {
 
         if (updateResult.success) {
             setMessage({ type: 'success', text: 'Personal records updated successfully.' })
-            const updatedUser = updateResult.data.user || updateResult.data;
-            setUser(updatedUser);
-            setSelectedFile(null);
-            setPreviewUrl(null);
+            refreshUser()
+            setSelectedFile(null)
+            setPreviewUrl(null)
         } else {
             setMessage({ type: 'error', text: updateResult.error || 'Failed to update records' })
         }
@@ -250,10 +243,10 @@ export default function ProfilePage() {
                                 <form onSubmit={handleSyncSave}>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                         {[
-                                            { id: 'leetcode', label: 'LeetCode Username', icon: '✦' },
-                                            { id: 'codeforces', label: 'Codeforces Handle', icon: '⚔' },
-                                            { id: 'codechef', label: 'CodeChef Handle', icon: '🍜' },
-                                            { id: 'geeksforgeeks', label: 'GFG Handle', icon: '🤓' }
+                                            { id: PLATFORMS.LEETCODE, label: 'LeetCode Username', icon: '✦' },
+                                            { id: PLATFORMS.CODEFORCES, label: 'Codeforces Handle', icon: '⚔' },
+                                            { id: PLATFORMS.CODECHEF, label: 'CodeChef Handle', icon: '🍜' },
+                                            { id: PLATFORMS.GFG, label: 'GFG Handle', icon: '🤓' }
                                         ].map(p => (
                                             <div className="form-group" key={p.id}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>

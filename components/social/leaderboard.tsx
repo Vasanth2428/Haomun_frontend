@@ -10,18 +10,26 @@ export default function Leaderboard({ friendsOnly = false }: { friendsOnly?: boo
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchLeaderboard()
+    const controller = new AbortController()
+    fetchLeaderboard(controller.signal)
+    return () => controller.abort()
   }, [friendsOnly])
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (signal?: AbortSignal) => {
     setLoading(true)
-    const result = await getLeaderboard(friendsOnly ? 'friends' : undefined)
-    if (result.success) {
-      setEntries(result.data)
-    } else {
-      setError(result.error || 'Failed to manifest leaderboard.')
+    try {
+      const result = await getLeaderboard(friendsOnly ? 'friends' : undefined, signal)
+      if (result.success) {
+        setEntries(result.data)
+      } else {
+        setError(result.error || 'Failed to manifest leaderboard.')
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') return
+      setError(`Consultation lost: ${err.message}`)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
@@ -52,8 +60,8 @@ export default function Leaderboard({ friendsOnly = false }: { friendsOnly?: boo
                   <td className={styles.rank}>#{index + 1}</td>
                   <td>
                     <div className={styles.userInfo}>
-                      <span className={styles.avatar}>{entry.displayName?.[0] || '👤'}</span>
-                      <span>{entry.displayName}</span>
+                      <span className={styles.avatar}>{entry.username?.[0] || '👤'}</span>
+                      <span>{entry.username}</span>
                     </div>
                   </td>
                   <td className={styles.level}>{entry.masteryLevel}</td>

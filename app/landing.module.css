@@ -1,3 +1,10 @@
+.landingWrapper {
+  background-color: var(--haomun-void);
+  min-height: 100vh;
+  color: var(--haomun-scroll);
+  font-family: 'Inter', sans-serif;
+}
+
 .hero {
   min-height: 90vh;
   display: flex;

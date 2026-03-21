@@ -1,3 +1,5 @@
+import { PLATFORMS } from '../constants'
+
 export function analyzeStats(data: any) {
   const insights: any = {
     solvedProblems: parseInt(data.solvedProblems) || 0,
@@ -53,10 +55,10 @@ export function calculateHaoMunScore(profiles: any[]) {
     level,
     metrics: { totalSolved, maxRating, consistencyBonus, platforms: platformCount },
     completeness: {
-      leetcode: profiles.some(p => p?.platform === 'leetcode'),
-      codeforces: profiles.some(p => p?.platform === 'codeforces'),
-      codechef: profiles.some(p => p?.platform === 'codechef'),
-      gfg: profiles.some(p => p?.platform === 'gfg' || p?.platform === 'geeksforgeeks'),
+      leetcode: profiles.some(p => p?.platform === PLATFORMS.LEETCODE),
+      codeforces: profiles.some(p => p?.platform === PLATFORMS.CODEFORCES),
+      codechef: profiles.some(p => p?.platform === PLATFORMS.CODECHEF),
+      gfg: profiles.some(p => p?.platform === PLATFORMS.GFG),
       score: Math.round((platformCount / 4) * 100),
     },
   }

@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { getProfile } from '@/utils/api'
-import { clearAuthCookie } from '@/utils/auth'
+import { useAuth } from '@/context/AuthContext'
 import styles from './navbar.module.css'
 
 interface NavbarProps {
@@ -15,17 +14,7 @@ export default function Navbar({ onTriggerIntro }: NavbarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const response = await getProfile()
-      if (response.success) {
-        setUser(response.data.user || response.data)
-      }
-    }
-    fetchUser()
-  }, [])
+  const { user, logout } = useAuth()
 
   const handleBrandClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -35,9 +24,7 @@ export default function Navbar({ onTriggerIntro }: NavbarProps) {
   }
 
   const handleLogout = () => {
-    clearAuthCookie()
-    setUser(null)
-    router.push('/login')
+    logout()
   }
 
   const navLinks = [

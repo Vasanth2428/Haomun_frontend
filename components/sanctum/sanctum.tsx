@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { aggregateProfiles, getSkillAnalysis, getProfile, getLeetCodeStats } from '@/utils/api'
+import { getSanctumData, getSkillAnalysis, getLeetCodeStats } from '@/utils/api'
+import { PLATFORMS } from '@/lib/constants'
+import { useAuth } from '@/context/AuthContext'
 import SkillRadar from '@/components/charts/SkillRadar'
 import ScoreHistoryChart from '@/components/charts/ScoreHistoryChart'
 import TopicHeatmap from '@/components/charts/TopicHeatmap'
@@ -14,26 +16,23 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
     const [error, setError] = useState('')
     const [errorDetail, setErrorDetail] = useState('')
 
+    const { user } = useAuth()
+
     useEffect(() => {
+        const controller = new AbortController()
+
         const fetchData = async () => {
+            if (!user) return
             setLoading(true)
             setError('')
             setErrorDetail('')
             try {
-                // First, get the profile to see what platforms we have
-                const profileResult = await getProfile()
-                let platforms = {}
-
-                if (profileResult.success) {
-                    const userData = profileResult.data.user || profileResult.data
-                    platforms = userData.platforms || {}
-                }
-
-                const result = await aggregateProfiles(platforms)
+                const platforms = user.platforms || {}
+                const result = await getSanctumData(controller.signal, platforms)
                 if (result.success) {
                     setData(result.data.data || result.data)
 
-                    const analysisResult = await getSkillAnalysis()
+                    const analysisResult = await getSkillAnalysis() // AI analysis usually static, but could also take signal if needed
                     if (analysisResult.success) {
                         setAnalysis(analysisResult.data.data || analysisResult.data)
                     }
@@ -69,12 +68,15 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
                     }
                 }
             } catch (err: any) {
+                if (err.name === 'AbortError') return
                 setError(err.message || 'The stellar alignment was lost.')
             } finally {
                 setLoading(false)
             }
         }
         fetchData()
+
+        return () => controller.abort()
     }, [])
 
     if (loading) {
@@ -206,10 +208,10 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
                                 FETCHING FROM SYNCHRONIZED SEALS:
                                 <span style={{ color: 'var(--haomun-gold)', marginLeft: '8px' }}>
                                     {[
-                                        data.platforms.leetcode && 'LEETCODE',
-                                        data.platforms.codeforces && 'CODEFORCES',
-                                        data.platforms.codechef && 'CODECHEF',
-                                        data.platforms.geeksforgeeks && 'GFG'
+                                        data.platforms[PLATFORMS.LEETCODE] && 'LEETCODE',
+                                        data.platforms[PLATFORMS.CODEFORCES] && 'CODEFORCES',
+                                        data.platforms[PLATFORMS.CODECHEF] && 'CODECHEF',
+                                        data.platforms[PLATFORMS.GFG] && 'GFG'
                                     ].filter(Boolean).join(' | ')}
                                 </span>
                             </span>
@@ -300,11 +302,11 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
                         </div>
                         <div className="insight-item glass-panel hover-lift">
                             <div className="insight-label">Consistency</div>
-                            <div className="insight-value" style={{ color: '#4CAF50' }}>{data?.consistencyScore || '88'}%</div>
+                            <div className="insight-value" style={{ color: '#4CAF50' }}>{data?.consistencyScore || data?.consistency || '??'}%</div>
                         </div>
                         <div className="insight-item glass-panel hover-lift">
                             <div className="insight-label">Trials Observed</div>
-                            <div className="insight-value" style={{ color: 'var(--haomun-gold)' }}>12</div>
+                            <div className="insight-value" style={{ color: 'var(--haomun-gold)' }}>{data?.trialsCount || data?.totalTrials || '??'}</div>
                         </div>
                     </div>
 

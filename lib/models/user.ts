@@ -53,8 +53,13 @@ const userSchema = new Schema<IUser>({
   createdAt: { type: Date, default: Date.now },
 })
 
+// Add Indexes for performance
+userSchema.index({ email: 1 })
+userSchema.index({ username: 1 })
+userSchema.index({ haomunScore: -1 }) // Descending for leaderboard
+
 // Hash password before saving
-userSchema.pre('save', async function() {
+userSchema.pre('save', async function(this: IUser) {
   if (!this.isModified('password')) return
   this.password = await bcrypt.hash(this.password, 10)
 })

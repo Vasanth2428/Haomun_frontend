@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { compareAllies } from '@/utils/api'
 import CompareChart from '@/components/charts/CompareChart'
+import { PLATFORMS } from '@/lib/constants'
 import styles from './contrast-hall.module.css'
 
 interface ContrastHallProps {
@@ -16,9 +17,9 @@ interface Ally {
 
 export default function ContrastHall({ onForge }: ContrastHallProps) {
   const [allies, setAllies] = useState<Ally[]>([
-    { username: '', platform: 'leetcode' },
-    { username: '', platform: 'leetcode' },
-    { username: '', platform: 'leetcode' }
+    { username: '', platform: PLATFORMS.LEETCODE },
+    { username: '', platform: PLATFORMS.LEETCODE },
+    { username: '', platform: PLATFORMS.LEETCODE }
   ])
   const [comparison, setComparison] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -82,12 +83,12 @@ export default function ContrastHall({ onForge }: ContrastHallProps) {
               <select
                 className="form-select"
                 value={ally.platform}
-                onChange={(e) => updateAlly(index, 'platform', e.target.value)}
+                onChange={(e) => updateAlly(index, 'platform', e.target.value as any)}
               >
-                <option value="leetcode">LeetCode</option>
-                <option value="codeforces">Codeforces</option>
-                <option value="codechef">CodeChef</option>
-                <option value="geeksforgeeks">GFG</option>
+                <option value={PLATFORMS.LEETCODE}>LeetCode</option>
+                <option value={PLATFORMS.CODEFORCES}>Codeforces</option>
+                <option value={PLATFORMS.CODECHEF}>CodeChef</option>
+                <option value={PLATFORMS.GFG}>GFG</option>
               </select>
             </div>
           </div>

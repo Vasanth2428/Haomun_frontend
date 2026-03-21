@@ -20,11 +20,16 @@ export default function ArchiveChamber({ onForge }: ArchiveChamberProps) {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const fetchData = async () => {
       setLoading(true)
       try {
         const { getArchive, getActivity } = await import('@/utils/api')
-        const [archiveRes, activityRes] = await Promise.all([getArchive(), getActivity()])
+        const [archiveRes, activityRes] = await Promise.all([
+          getArchive(controller.signal), 
+          getActivity(controller.signal)
+        ])
         
         if (archiveRes.success) setArchives(archiveRes.data || [])
         if (activityRes.success) setChartData(activityRes.data || [])
@@ -33,12 +38,15 @@ export default function ArchiveChamber({ onForge }: ArchiveChamberProps) {
           setError('Failed to retrieve historical records.')
         }
       } catch (err: any) {
+        if (err.name === 'AbortError') return
         setError(err.message || 'The stellar alignment was lost.')
       } finally {
         setLoading(false)
       }
     }
     fetchData()
+
+    return () => controller.abort()
   }, [])
 
   if (loading) {

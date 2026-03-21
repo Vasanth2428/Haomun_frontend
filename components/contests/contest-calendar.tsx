@@ -21,11 +21,17 @@ export default function ContestCalendar() {
     const [error, setError] = useState('')
     const [filter, setFilter] = useState('All')
 
-    const fetchContests = async () => {
+    useEffect(() => {
+        const controller = new AbortController()
+        fetchContests(controller.signal)
+        return () => controller.abort()
+    }, [])
+
+    const fetchContests = async (signal?: AbortSignal) => {
         setLoading(true)
         setError('')
         try {
-            const result = await getContests()
+            const result = await getContests(signal)
             if (result.success) {
                 // Robust extraction: result.data (direct), result.data.data (nested), result.data.contests (explicit)
                 const rawData = result.data.data || result.data.contests || result.data;
@@ -34,16 +40,13 @@ export default function ContestCalendar() {
             } else {
                 setError(result.error || 'The celestial oracles are silent.')
             }
-        } catch (err) {
+        } catch (err: any) {
+            if (err.name === 'AbortError') return
             setError('The stellar alignment was lost.')
         } finally {
             setLoading(false)
         }
     }
-
-    useEffect(() => {
-        fetchContests()
-    }, [])
 
     const filteredContests = filter === 'All'
         ? contests
@@ -102,7 +105,7 @@ export default function ContestCalendar() {
                     <p style={{ marginTop: '16px', color: 'var(--haomun-mist)' }}>{error}</p>
                     <button
                         className="btn btn-primary"
-                        onClick={fetchContests}
+                        onClick={() => fetchContests()}
                         style={{ marginTop: '32px', padding: '12px 32px' }}
                     >
                         Retry Consultation
@@ -119,7 +122,7 @@ export default function ContestCalendar() {
                             </p>
                             <button
                                 className="btn-text"
-                                onClick={fetchContests}
+                                onClick={() => fetchContests()}
                                 style={{ color: 'var(--haomun-gold)', fontWeight: 'bold' }}
                             >
                                 REFRESH MAPS

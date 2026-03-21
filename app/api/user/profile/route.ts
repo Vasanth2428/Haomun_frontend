@@ -2,6 +2,7 @@ export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/lib/models/user'
+import { PLATFORMS } from '@/lib/constants'
 import { verifyAuth, authError } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -26,16 +27,16 @@ export async function PATCH(req: NextRequest) {
       }, { status: 400 })
     }
 
-    const { displayName, platforms, avatarUrl } = validation.data
+    const { username, platforms, avatarUrl } = validation.data
     await connectDB()
     const updates: any = {}
-    if (displayName) updates.displayName = displayName
+    if (username) updates.username = username
     if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl
     if (platforms) {
-      if (platforms.leetcode) updates.leetcodeUsername = platforms.leetcode
-      if (platforms.codeforces) updates.codeforcesUsername = platforms.codeforces
-      if (platforms.codechef) updates.codechefUsername = platforms.codechef
-      if (platforms.geeksforgeeks) updates.gfgUsername = platforms.geeksforgeeks
+      if (platforms[PLATFORMS.LEETCODE]) updates.leetcodeUsername = platforms[PLATFORMS.LEETCODE]
+      if (platforms[PLATFORMS.CODEFORCES]) updates.codeforcesUsername = platforms[PLATFORMS.CODEFORCES]
+      if (platforms[PLATFORMS.CODECHEF]) updates.codechefUsername = platforms[PLATFORMS.CODECHEF]
+      if (platforms[PLATFORMS.GFG]) updates.gfgUsername = platforms[PLATFORMS.GFG]
     }
 
     const updated = await User.findByIdAndUpdate(user._id, updates, { new: true })

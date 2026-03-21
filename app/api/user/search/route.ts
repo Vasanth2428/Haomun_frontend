@@ -4,6 +4,11 @@ import connectDB from '@/lib/db'
 import User from '@/lib/models/user'
 import { verifyAuth, authError } from '@/lib/auth'
 
+// Escape regex-special chars so user input is treated as a literal substring
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export async function GET(req: NextRequest) {
   try {
     await verifyAuth(req)
@@ -14,14 +19,16 @@ export async function GET(req: NextRequest) {
       return Response.json({ success: true, data: [] })
     }
 
+    const safe = escapeRegex(q)
+
     await connectDB()
     const users = await User.find({
       $or: [
-        { displayName: { $regex: q, $options: 'i' } },
-        { leetcodeUsername: { $regex: q, $options: 'i' } },
-        { codeforcesUsername: { $regex: q, $options: 'i' } },
-        { codechefUsername: { $regex: q, $options: 'i' } },
-        { gfgUsername: { $regex: q, $options: 'i' } },
+        { displayName: { $regex: safe, $options: 'i' } },
+        { leetcodeUsername: { $regex: safe, $options: 'i' } },
+        { codeforcesUsername: { $regex: safe, $options: 'i' } },
+        { codechefUsername: { $regex: safe, $options: 'i' } },
+        { gfgUsername: { $regex: safe, $options: 'i' } },
       ]
     })
     .select('displayName avatarUrl haomunScore masteryLevel leetcodeUsername codeforcesUsername')

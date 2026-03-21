@@ -14,19 +14,30 @@ export default function GuildNexus() {
   const [formData, setFormData] = useState({ name: '', description: '', emblem: '🛡️' })
 
   useEffect(() => {
-    fetchData()
+    const controller = new AbortController()
+    fetchData(controller.signal)
+    return () => controller.abort()
   }, [])
 
-  const fetchData = async () => {
+  const fetchData = async (signal?: AbortSignal) => {
     setLoading(true)
-    const [guildsResult, profileResult] = await Promise.all([getGuilds(), getProfile()])
-    
-    if (guildsResult.success) setGuilds(guildsResult.data)
-    if (profileResult.success) {
-      const user = profileResult.data.user || profileResult.data
-      setUserGuildId(user.guildId || null)
+    try {
+      const [guildsResult, profileResult] = await Promise.all([
+        getGuilds(signal), 
+        getProfile(signal)
+      ])
+      
+      if (guildsResult.success) setGuilds(guildsResult.data)
+      if (profileResult.success) {
+        const user = profileResult.data.user || profileResult.data
+        setUserGuildId(user.guildId || null)
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') return
+      setStatus(`Resonance lost: ${err.message}`)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const handleCreate = async () => {
@@ -140,7 +151,7 @@ export default function GuildNexus() {
                   <span style={{ fontSize: '2rem' }}>{guild.emblem}</span>
                   <div>
                     <div style={{ fontWeight: 'bold', color: 'var(--haomun-gold)' }}>{guild.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--haomun-slate)' }}>{guild.members?.length || 0} Members • Leader: {guild.leader?.displayName}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--haomun-slate)' }}>{guild.members?.length || 0} Members • Leader: {guild.leader?.username}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
