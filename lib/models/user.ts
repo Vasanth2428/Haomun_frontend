@@ -59,9 +59,15 @@ userSchema.index({ username: 1 })
 userSchema.index({ haomunScore: -1 }) // Descending for leaderboard
 
 // Hash password before saving
-userSchema.pre('save', async function(this: IUser) {
+userSchema.pre('save', async function(this: any) {
   if (!this.isModified('password')) return
-  this.password = await bcrypt.hash(this.password, 10)
+  try {
+    const salt = await bcrypt.genSalt(10)
+    this.password = await bcrypt.hash(this.password, salt)
+  } catch (err) {
+    console.error('Password hashing failed:', err)
+    throw err
+  }
 })
 
 // Compare password method
@@ -70,6 +76,12 @@ userSchema.methods.comparePassword = async function (candidatePassword: string) 
 }
 
 // Prevent model recompilation in dev (Next.js hot reload)
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  if (mongoose.models.User) {
+    delete mongoose.models.User
+  }
+}
+
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', userSchema)
 
 export default User

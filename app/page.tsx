@@ -13,7 +13,7 @@ export const metadata = {
 
 export default async function Home() {
   const cookieStore = await cookies()
-  const token = cookieStore.get('auth_token')
+  const token = cookieStore.get('haomun_token')
   const isLoggedIn = !!token
 
   const jsonLd = {

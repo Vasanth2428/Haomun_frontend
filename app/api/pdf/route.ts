@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const { summary, insights } = validation.data
     const pdfBuffer = await generateReportPDF(summary, insights)
 
-    return new Response(Buffer.from(pdfBuffer), {
+    return new Response(pdfBuffer as any, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="haomun-report.pdf"',
@@ -38,10 +38,20 @@ export async function GET(req: NextRequest) {
     await verifyAuth(req)
     const url = new URL(req.url)
     const summary = url.searchParams.get('summary') || ''
-    const insights = JSON.parse(url.searchParams.get('insights') || '{}')
+    
+    let insights = {}
+    const insightsParam = url.searchParams.get('insights')
+    if (insightsParam) {
+      try {
+        insights = JSON.parse(insightsParam)
+      } catch (e) {
+        console.error('Failed to parse insights JSON:', e)
+      }
+    }
+
     const pdfBuffer = await generateReportPDF(summary, insights)
 
-    return new Response(Buffer.from(pdfBuffer), {
+    return new Response(pdfBuffer as any, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="haomun-report.pdf"',
