@@ -37,8 +37,13 @@ async function connectDB() {
     }).then((m) => m)
   }
 
-  cached.conn = await cached.promise
-  return cached.conn
+  try {
+    cached.conn = await cached.promise
+    return cached.conn
+  } catch (err) {
+    cached.promise = null
+    throw err
+  }
 }
 
 export default connectDB

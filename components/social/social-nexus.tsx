@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getFriends, searchUsers, addFriend, removeFriend } from '@/utils/api'
+import { getFriends, searchUsers, addFriend, removeFriend } from '@/lib/api/client'
 import Leaderboard from './leaderboard'
 import GuildNexus from './GuildNexus'
 import styles from './social-nexus.module.css'
@@ -75,15 +75,15 @@ export default function SocialNexus() {
         </p>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '32px' }}>
-          <button 
-            className={`btn ${activeTab === 'circle' ? 'btn-primary' : 'btn-secondary'}`} 
+          <button
+            className={`btn ${activeTab === 'circle' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '12px 32px', fontFamily: 'Cinzel' }}
             onClick={() => setActiveTab('circle')}
           >
             The Circle
           </button>
-          <button 
-            className={`btn ${activeTab === 'guilds' ? 'btn-primary' : 'btn-secondary'}`} 
+          <button
+            className={`btn ${activeTab === 'guilds' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '12px 32px', fontFamily: 'Cinzel' }}
             onClick={() => setActiveTab('guilds')}
           >
@@ -97,94 +97,94 @@ export default function SocialNexus() {
       ) : (
         <>
           <div className={styles.nexusGrid}>
-        {/* Friends List */}
-        <div className="scroll-card glass-panel runic-glow">
-          <h2 className="scroll-header">Synchronized Comrades ({friends.length})</h2>
-          <div className={styles.listContainer}>
-            {loading ? (
-              <p className="text-gradient-gold" style={{ textAlign: 'center', padding: '40px' }}>Consulting the nexus...</p>
-            ) : friends.length === 0 ? (
-              <p style={{ color: 'var(--haomun-mist)', textAlign: 'center', padding: '40px' }}>No resonances found in your circle.</p>
-            ) : (
-              friends.map(friend => (
-                <div key={friend._id} className={styles.friendItem}>
-                  <div className={styles.friendInfo}>
-                    <div className={styles.avatarPlaceholder}>{friend.username?.[0] || '👤'}</div>
-                    <div>
-                      <div className={styles.friendName}>{friend.username}</div>
-                      <div className={styles.friendLevel}>{friend.masteryLevel} • {friend.haomunScore} pts</div>
+            {/* Friends List */}
+            <div className="scroll-card glass-panel runic-glow">
+              <h2 className="scroll-header">Synchronized Comrades ({friends.length})</h2>
+              <div className={styles.listContainer}>
+                {loading ? (
+                  <p className="text-gradient-gold" style={{ textAlign: 'center', padding: '40px' }}>Consulting the nexus...</p>
+                ) : friends.length === 0 ? (
+                  <p style={{ color: 'var(--haomun-mist)', textAlign: 'center', padding: '40px' }}>No resonances found in your circle.</p>
+                ) : (
+                  friends.map(friend => (
+                    <div key={friend._id} className={styles.friendItem}>
+                      <div className={styles.friendInfo}>
+                        <div className={styles.avatarPlaceholder}>{friend.username?.[0] || '👤'}</div>
+                        <div>
+                          <div className={styles.friendName}>{friend.username}</div>
+                          <div className={styles.friendLevel}>{friend.masteryLevel} • {friend.haomunScore} pts</div>
+                        </div>
+                      </div>
+                      <button className="btn-text" style={{ color: 'var(--haomun-crimson)' }} onClick={() => handleRemoveFriend(friend._id)}>Sever</button>
                     </div>
-                  </div>
-                  <button className="btn-text" style={{ color: 'var(--haomun-crimson)' }} onClick={() => handleRemoveFriend(friend._id)}>Sever</button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+                  ))
+                )}
+              </div>
+            </div>
 
-        {/* Search & Discovery */}
-        <div className="scroll-card glass-panel">
-          <h2 className="scroll-header">Discover Seekers</h2>
-          <div className="form-group" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-            <input 
-              type="text" 
-              className="form-input" 
-              placeholder="Search by name or handle..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            />
-            <button className="btn btn-primary" onClick={handleSearch} disabled={searching}>Invoke</button>
-          </div>
+            {/* Search & Discovery */}
+            <div className="scroll-card glass-panel">
+              <h2 className="scroll-header">Discover Seekers</h2>
+              <div className="form-group" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Search by name or handle..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+                <button className="btn btn-primary" onClick={handleSearch} disabled={searching}>Invoke</button>
+              </div>
 
-          <div className={styles.listContainer} style={{ marginTop: '20px' }}>
-            {searching ? (
-              <p className="text-gradient-gold" style={{ textAlign: 'center', padding: '40px' }}>Searching realms...</p>
-            ) : searchResults.length === 0 && searchTerm.length >= 2 ? (
-              <p style={{ color: 'var(--haomun-mist)', textAlign: 'center', padding: '40px' }}>No seekers found with that seal.</p>
-            ) : (
-              searchResults.map(user => (
-                <div key={user._id} className={styles.friendItem}>
-                  <div className={styles.friendInfo}>
-                    <div className={styles.avatarPlaceholder}>{user.username?.[0] || '👤'}</div>
-                    <div>
-                      <div className={styles.friendName}>{user.username}</div>
-                      <div className={styles.friendLevel}>{user.masteryLevel} • {user.haomunScore} pts</div>
+              <div className={styles.listContainer} style={{ marginTop: '20px' }}>
+                {searching ? (
+                  <p className="text-gradient-gold" style={{ textAlign: 'center', padding: '40px' }}>Searching realms...</p>
+                ) : searchResults.length === 0 && searchTerm.length >= 2 ? (
+                  <p style={{ color: 'var(--haomun-mist)', textAlign: 'center', padding: '40px' }}>No seekers found with that seal.</p>
+                ) : (
+                  searchResults.map(user => (
+                    <div key={user._id} className={styles.friendItem}>
+                      <div className={styles.friendInfo}>
+                        <div className={styles.avatarPlaceholder}>{user.username?.[0] || '👤'}</div>
+                        <div>
+                          <div className={styles.friendName}>{user.username}</div>
+                          <div className={styles.friendLevel}>{user.masteryLevel} • {user.haomunScore} pts</div>
+                        </div>
+                      </div>
+                      {!friends.some(f => f._id === user._id) && (
+                        <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.8rem' }} onClick={() => handleAddFriend(user._id)}>Connect</button>
+                      )}
                     </div>
-                  </div>
-                  {!friends.some(f => f._id === user._id) && (
-                    <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.8rem' }} onClick={() => handleAddFriend(user._id)}>Connect</button>
-                  )}
-                </div>
-              ))
-            )}
+                  ))
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div style={{ marginTop: '40px' }} className="scroll-card glass-panel">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h2 className="scroll-header" style={{ margin: 0 }}>The Rankings</h2>
-          <div className="tab-group" style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '8px' }}>
-            <button 
-              className={`btn ${!showFriendsOnly ? 'btn-primary' : 'btn-text'}`} 
-              style={{ padding: '6px 16px', fontSize: '0.8rem' }}
-              onClick={() => setShowFriendsOnly(false)}
-            >
-              Global
-            </button>
-            <button 
-              className={`btn ${showFriendsOnly ? 'btn-primary' : 'btn-text'}`} 
-              style={{ padding: '6px 16px', fontSize: '0.8rem' }}
-              onClick={() => setShowFriendsOnly(true)}
-            >
-              Comrades
-            </button>
+          <div style={{ marginTop: '40px' }} className="scroll-card glass-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 className="scroll-header" style={{ margin: 0 }}>The Rankings</h2>
+              <div className="tab-group" style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '8px' }}>
+                <button
+                  className={`btn ${!showFriendsOnly ? 'btn-primary' : 'btn-text'}`}
+                  style={{ padding: '6px 16px', fontSize: '0.8rem' }}
+                  onClick={() => setShowFriendsOnly(false)}
+                >
+                  Global
+                </button>
+                <button
+                  className={`btn ${showFriendsOnly ? 'btn-primary' : 'btn-text'}`}
+                  style={{ padding: '6px 16px', fontSize: '0.8rem' }}
+                  onClick={() => setShowFriendsOnly(true)}
+                >
+                  Comrades
+                </button>
+              </div>
+            </div>
+            <Leaderboard friendsOnly={showFriendsOnly} />
           </div>
-        </div>
-        <Leaderboard friendsOnly={showFriendsOnly} />
-      </div>
-      </>
+        </>
       )}
 
       {status && (

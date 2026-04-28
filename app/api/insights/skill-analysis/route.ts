@@ -1,7 +1,7 @@
+export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/lib/models/user'
-export const runtime = 'nodejs'
 import { verifyAuth, authError } from '@/lib/auth'
 import { fetchPlatformData } from '@/lib/services/fetch'
 import { aggregateProfiles } from '@/lib/services/analysis'
@@ -29,12 +29,28 @@ export async function GET(req: NextRequest) {
     const analysis = await generateSkillAnalysis(aggregated)
 
     await connectDB()
-    await User.findByIdAndUpdate(user._id, {
+    const lastHistory = user.scoreHistory?.[user.scoreHistory.length - 1]
+    const shouldPushHistory = !lastHistory ||
+      (new Date().getTime() - new Date(lastHistory.timestamp).getTime() > 1000 * 60 * 60 * 12) ||
+      (aggregated.unifiedScore.score !== user.haomunScore)
+
+    const updateFields: any = {
       haomunScore: aggregated.unifiedScore.score,
       masteryLevel: aggregated.unifiedScore.level,
       lastSkillAnalysis: analysis,
       lastAnalysisDate: new Date(),
-    })
+    }
+
+    if (shouldPushHistory) {
+      updateFields.$push = {
+        scoreHistory: {
+          $each: [{ score: aggregated.unifiedScore.score, timestamp: new Date() }],
+          $slice: -200
+        }
+      }
+    }
+
+    await User.findByIdAndUpdate(user._id, updateFields)
 
     return Response.json({ success: true, data: analysis })
   } catch (e: any) {

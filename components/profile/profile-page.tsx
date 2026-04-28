@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { getSanctumData, updateProfile } from '@/utils/api'
+import { getSanctumData, updateProfile } from '@/lib/api/client'
 import { PLATFORMS } from '@/lib/constants'
 import { useAuth } from '@/context/AuthContext'
 import Image from 'next/image'
@@ -339,7 +339,7 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Oracle's Note (Bio)</label>
+                                        <label className="form-label">Oracle&apos;s Note (Bio)</label>
                                         <textarea
                                             className="form-input"
                                             style={{ minHeight: '100px', resize: 'vertical' }}

@@ -2,7 +2,7 @@ export const PLATFORMS = {
   LEETCODE: 'leetcode',
   CODEFORCES: 'codeforces',
   CODECHEF: 'codechef',
-  GFG: 'geeksforgeeks',
+  GFG: 'gfg',
 } as const;
 
 export type Platform = typeof PLATFORMS[keyof typeof PLATFORMS];

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getLeaderboard, addFriend } from '@/utils/api'
+import { getLeaderboard } from '@/lib/api/client'
 import styles from './leaderboard.module.css'
 
 export default function Leaderboard({ friendsOnly = false }: { friendsOnly?: boolean }) {
@@ -11,31 +11,32 @@ export default function Leaderboard({ friendsOnly = false }: { friendsOnly?: boo
 
   useEffect(() => {
     const controller = new AbortController()
+
+    async function fetchLeaderboard(signal?: AbortSignal) {
+      setLoading(true)
+      try {
+        const result = await getLeaderboard(friendsOnly ? 'friends' : undefined, signal)
+        if (result.success) {
+          setEntries(result.data)
+        } else {
+          setError(result.error || 'Failed to manifest leaderboard.')
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') return
+        setError(`Consultation lost: ${err.message}`)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchLeaderboard(controller.signal)
     return () => controller.abort()
   }, [friendsOnly])
 
-  const fetchLeaderboard = async (signal?: AbortSignal) => {
-    setLoading(true)
-    try {
-      const result = await getLeaderboard(friendsOnly ? 'friends' : undefined, signal)
-      if (result.success) {
-        setEntries(result.data)
-      } else {
-        setError(result.error || 'Failed to manifest leaderboard.')
-      }
-    } catch (err: any) {
-      if (err.name === 'AbortError') return
-      setError(`Consultation lost: ${err.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className={styles.leaderboardContainer}>
       <h2 className="scroll-header">{friendsOnly ? 'Comrade Rankings' : 'Global Seekers'}</h2>
-      
+
       {loading ? (
         <p className="text-gradient-gold" style={{ textAlign: 'center', padding: '40px' }}>Consulting the collective resonance...</p>
       ) : error ? (

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     // Sanitizing string input to prevent NoSQL injection
     const sanitizedName = typeof name === 'string' ? name.trim() : ''
-    
+
     if (!sanitizedName || sanitizedName.length < 3) {
       return Response.json({ success: false, error: 'Guild name must be at least 3 characters' }, { status: 400 })
     }
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     })
 
     const updatedUser = await User.findOneAndUpdate(
-      { _id: user._id, guildId: { $exists: false } },
+      { _id: user._id, guildId: null },
       { guildId: guild._id },
       { new: true }
     )

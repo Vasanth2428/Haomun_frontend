@@ -9,11 +9,11 @@ export async function GET(req: NextRequest) {
     const user = await verifyAuth(req)
     await connectDB()
     const userData = await User.findById(user._id)
-    
+
     // For now, we take it from lastSkillAnalysis if available
     // Otherwise, we mock it based on total solved until we have a proper history log
     const lastAnalysis = userData?.lastSkillAnalysis
-    
+
     if (lastAnalysis && lastAnalysis.heatmapData) {
       // Aggregate heatmapData into months
       const monthlyData: Record<string, number> = {}
@@ -21,18 +21,13 @@ export async function GET(req: NextRequest) {
         const month = new Date(d.date).toLocaleString('default', { month: 'short' })
         monthlyData[month] = (monthlyData[month] || 0) + d.count
       })
-      
+
       const data = Object.entries(monthlyData).map(([date, solved]) => ({ date, solved }))
       return Response.json({ success: true, data })
     }
 
-    // Fallback/Mock for new users with no analysis yet
-    const fallback = [
-      { date: 'Jan', solved: 10 },
-      { date: 'Feb', solved: 15 },
-      { date: 'Mar', solved: 25 },
-    ]
-    return Response.json({ success: true, data: fallback })
+    // No analysis data yet — return empty with flag so frontend can show empty state
+    return Response.json({ success: true, data: [], isNewUser: true })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import styles from './contest-calendar.module.css'
-import { getContests } from '@/utils/api'
+import { getContests } from '@/lib/api/client'
 
 interface Contest {
     name: string

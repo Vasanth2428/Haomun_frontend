@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getGuilds, createGuild, joinGuild, getProfile } from '@/utils/api'
+import { getGuilds, createGuild, joinGuild, getProfile } from '@/lib/api/client'
 import styles from './social-nexus.module.css' // Reusing some base styles
 
 export default function GuildNexus() {
@@ -10,7 +10,7 @@ export default function GuildNexus() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [status, setStatus] = useState('')
-  
+
   const [formData, setFormData] = useState({ name: '', description: '', emblem: '🛡️' })
 
   useEffect(() => {
@@ -23,10 +23,10 @@ export default function GuildNexus() {
     setLoading(true)
     try {
       const [guildsResult, profileResult] = await Promise.all([
-        getGuilds(signal), 
+        getGuilds(signal),
         getProfile(signal)
       ])
-      
+
       if (guildsResult.success) setGuilds(guildsResult.data)
       if (profileResult.success) {
         const user = profileResult.data.user || profileResult.data
@@ -100,29 +100,29 @@ export default function GuildNexus() {
           <div style={{ display: 'grid', gap: '16px', marginTop: '20px' }}>
             <div className="form-group">
               <label className="form-label">Guild Name</label>
-              <input 
-                className="form-input" 
-                value={formData.name} 
-                onChange={e => setFormData({...formData, name: e.target.value})}
+              <input
+                className="form-input"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="The Celestial Seekers..."
               />
             </div>
             <div className="form-group">
               <label className="form-label">Purpose (Description)</label>
-              <textarea 
-                className="form-input" 
-                value={formData.description} 
-                onChange={e => setFormData({...formData, description: e.target.value})}
+              <textarea
+                className="form-input"
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
                 placeholder="To transcend the digital limits..."
                 style={{ height: '80px' }}
               />
             </div>
             <div className="form-group">
               <label className="form-label">Emblem (Emoji)</label>
-              <input 
-                className="form-input" 
-                value={formData.emblem} 
-                onChange={e => setFormData({...formData, emblem: e.target.value})}
+              <input
+                className="form-input"
+                value={formData.emblem}
+                onChange={e => setFormData({ ...formData, emblem: e.target.value })}
                 placeholder="🛡️"
               />
             </div>
@@ -140,9 +140,9 @@ export default function GuildNexus() {
             <p style={{ color: 'var(--haomun-mist)', textAlign: 'center' }}>No guilds have manifested in this realm yet.</p>
           ) : (
             guilds.map(guild => (
-              <div key={guild._id} className="insight-item glass-panel" style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+              <div key={guild._id} className="insight-item glass-panel" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '20px',
                 border: guild._id === userGuildId ? '1px solid var(--haomun-gold)' : undefined

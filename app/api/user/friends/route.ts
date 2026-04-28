@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
     await connectDB()
-    const userData = await User.findById(user._id).populate('friends', 'displayName email avatarUrl haomunScore masteryLevel')
+    const userData = await User.findById(user._id).populate('friends', 'username email avatarUrl haomunScore masteryLevel')
     return Response.json({ success: true, data: userData?.friends || [] })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
@@ -24,9 +24,9 @@ export async function POST(req: NextRequest) {
     const validation = friendSchema.safeParse(body)
 
     if (!validation.success) {
-      return Response.json({ 
-        success: false, 
-        error: validation.error.errors[0].message 
+      return Response.json({
+        success: false,
+        error: validation.error.errors[0].message
       }, { status: 400 })
     }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       User.findByIdAndUpdate(friendId, { $addToSet: { friends: user._id } })
     ])
 
-    const updatedUser = await User.findById(user._id).populate('friends', 'displayName email avatarUrl haomunScore masteryLevel')
+    const updatedUser = await User.findById(user._id).populate('friends', 'username email avatarUrl haomunScore masteryLevel')
     return Response.json({ success: true, data: updatedUser?.friends })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
@@ -72,7 +72,7 @@ export async function DELETE(req: NextRequest) {
       User.findByIdAndUpdate(friendId, { $pull: { friends: user._id } })
     ])
 
-    const updatedUser = await User.findById(user._id).populate('friends', 'displayName email avatarUrl haomunScore masteryLevel')
+    const updatedUser = await User.findById(user._id).populate('friends', 'username email avatarUrl haomunScore masteryLevel')
     return Response.json({ success: true, data: updatedUser?.friends })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()

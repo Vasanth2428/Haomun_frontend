@@ -45,7 +45,7 @@ export default async function Home() {
       <header className={styles.hero}>
         <h1 className={styles.heroTitle}>HaoMun</h1>
         <p className={styles.heroSubtitle}>
-          The convergence of ancient strategic wisdom and modern artificial intelligence. 
+          The convergence of ancient strategic wisdom and modern artificial intelligence.
           Manifest your digital mastery across every realm of code.
         </p>
         <div className={styles.ctaContainer}>
@@ -72,13 +72,13 @@ export default async function Home() {
           <h2>The Four Pillars</h2>
           <p style={{ color: 'var(--haomun-mist)' }}>Architected for the elite seeker of knowledge.</p>
         </div>
-        
+
         <div className={styles.featureGrid}>
           <div className={styles.featureCard}>
             <span className={styles.featureIcon}>🏯</span>
             <h3 className={styles.featureTitle}>Intelligence Pavilion</h3>
             <p className={styles.featureText}>
-              Harmonize your profiles from LeetCode, Codeforces, CodeChef, and GFG. 
+              Harmonize your profiles from LeetCode, Codeforces, CodeChef, and GFG.
               Real-time cross-platform analytics in a single source of truth.
             </p>
           </div>
@@ -87,8 +87,8 @@ export default async function Home() {
             <span className={styles.featureIcon}>⚒</span>
             <h3 className={styles.featureTitle}>Scroll Forge</h3>
             <p className={styles.featureText}>
-              Leverage Gemini 1.5 Pro to forge deep skill post-mortems and AI-driven performance reports. 
-              Refine your manifest with the Oracle's precision.
+              Leverage Gemini 1.5 Pro to forge deep skill post-mortems and AI-driven performance reports.
+              Refine your manifest with the Oracle&apos;s precision.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export default async function Home() {
             <span className={styles.featureIcon}>📜</span>
             <h3 className={styles.featureTitle}>Archive Chamber</h3>
             <p className={styles.featureText}>
-              Map your consistency across time and realms. 
+              Map your consistency across time and realms.
               Track every manifestation and observe the evolution of your mastery with high-fidelity heatmaps.
             </p>
           </div>
@@ -105,7 +105,7 @@ export default async function Home() {
             <span className={styles.featureIcon}>👥</span>
             <h3 className={styles.featureTitle}>Social Nexus</h3>
             <p className={styles.featureText}>
-              Compete, connect, and collaborate. 
+              Compete, connect, and collaborate.
               Filtered leaderboards, friend management, and future-ready Guild mechanics for deep collective growth.
             </p>
           </div>

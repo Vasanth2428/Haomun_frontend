@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { scribeEdit, createReportPdf, saveToArchive } from '@/utils/api'
+import { scribeEdit, createReportPdf, saveToArchive } from '@/lib/api/client'
 import styles from './scroll-forge.module.css'
 
 interface ScrollForgeProps {
@@ -49,7 +49,7 @@ export default function ScrollForge({ data }: ScrollForgeProps) {
     setStatus('Preserving manifestation in the Archive Chamber...')
     const title = `Manifestation - ${new Date().toLocaleDateString()}`
     const result = await saveToArchive(title, content)
-    
+
     if (result.success) {
       setStatus('Manifestation successfully preserved in the Archive.')
     } else {
@@ -63,7 +63,7 @@ export default function ScrollForge({ data }: ScrollForgeProps) {
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
         <h1 className="text-gradient-gold" style={{ fontSize: '3.3rem', marginBottom: '16px' }}>Scroll Forge</h1>
         <p style={{ color: 'var(--haomun-mist)', fontSize: '1.15rem', maxWidth: '800px', margin: '0 auto' }}>
-          Impart permanence to the Oracle's wisdom and manifest the eternal record of your mastery.
+          Impart permanence to the Oracle&apos;s wisdom and manifest the eternal record of your mastery.
         </p>
       </div>
 

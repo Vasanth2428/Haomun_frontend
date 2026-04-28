@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getSanctumData, getSkillAnalysis, getLeetCodeStats } from '@/utils/api'
+import { getSanctumData, getSkillAnalysis, getLeetCodeStats } from '@/lib/api/client'
 import { PLATFORMS } from '@/lib/constants'
 import { useAuth } from '@/context/AuthContext'
 import SkillRadar from '@/components/charts/SkillRadar'
@@ -77,7 +77,7 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
         fetchData()
 
         return () => controller.abort()
-    }, [])
+    }, [user, onNavigate])
 
     if (loading) {
         return (
@@ -95,7 +95,7 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
                     <span style={{ fontSize: '4rem', display: 'block', marginBottom: '24px' }}>🌋</span>
                     <h2 style={{ color: 'var(--haomun-crimson)', fontSize: '2rem', marginBottom: '16px', fontFamily: 'Cinzel' }}>Server Breach (500)</h2>
                     <p style={{ color: 'var(--haomun-mist)', fontSize: '1.1rem', marginBottom: '32px', lineHeight: '1.6' }}>
-                        The Oracle's server has encountered a profound disturbance while manifesting your records. This is an Internal Server Error (500) that usually indicates a crash during data scraping or aggregation.
+                        The Oracle&apos;s server has encountered a profound disturbance while manifesting your records. This is an Internal Server Error (500) that usually indicates a crash during data scraping or aggregation.
                     </p>
                     <div style={{ background: 'rgba(0,0,0,0.4)', padding: '20px', borderRadius: '8px', marginBottom: '32px', textAlign: 'left', border: '1px solid var(--haomun-charcoal)', overflowX: 'auto' }}>
                         <div style={{ color: 'var(--haomun-gold)', fontSize: '0.8rem', marginBottom: '8px', opacity: 0.6 }}>DIAGNOSTIC TRACE</div>
@@ -254,14 +254,14 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
 
                         {/* AI Insights Card */}
                         <div className="scroll-card glass-panel" style={{ background: 'rgba(5,5,5,0.4)' }}>
-                            <h3 className="scroll-header" style={{ color: 'var(--haomun-primary)' }}>Oracle's Overview</h3>
+                            <h3 className="scroll-header" style={{ color: 'var(--haomun-primary)' }}>Oracle&apos;s Overview</h3>
                             <div style={{ height: '240px', overflowY: 'auto', paddingRight: '12px', fontSize: '1.05rem', color: 'var(--haomun-mist)', lineHeight: '1.8' }}>
                                 {analysis?.overview || 'Manifesting deep insights into your patterns...'}
                             </div>
                             <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--haomun-charcoal)' }}>
                                 <div style={{ fontSize: '0.85rem', color: 'var(--haomun-slate)', marginBottom: '8px' }}>CELESTIAL STRATEGY</div>
                                 <div style={{ color: 'var(--haomun-gold)', fontStyle: 'italic', fontSize: '0.95rem' }}>
-                                    "{analysis?.strategy || 'Continue your journey to unveil the path forward.'}"
+                                    &quot;{analysis?.strategy || 'Continue your journey to unveil the path forward.'}&quot;
                                 </div>
                             </div>
                         </div>
@@ -281,7 +281,7 @@ export default function Sanctum({ onNavigate }: { onNavigate?: (page: any) => vo
                             <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                 <div className="insight-item glass-panel" style={{ padding: '12px' }}>
                                     <div className="insight-label" style={{ fontSize: '0.7rem' }}>Platform Breadth</div>
-                                    <div style={{ color: 'var(--haomun-gold)', fontWeight: 'bold' }}>{data?.unifiedScore?.metrics?.platforms || 0} Sectors Sync'd</div>
+                                    <div style={{ color: 'var(--haomun-gold)', fontWeight: 'bold' }}>{data?.unifiedScore?.metrics?.platforms || 0} Sectors Sync&apos;d</div>
                                 </div>
                                 <div className="insight-item glass-panel" style={{ padding: '12px' }}>
                                     <div className="insight-label" style={{ fontSize: '0.7rem' }}>Max Performance</div>

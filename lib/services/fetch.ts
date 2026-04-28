@@ -25,8 +25,8 @@ async function fetchLeetCodeData(username: string): Promise<PlatformData> {
       userCalendar(username: $username) { submissionCalendar }
     }`
 
-    const res = await axios.post('https://leetcode.com/graphql', 
-      { query, variables: { username } }, 
+    const res = await axios.post('https://leetcode.com/graphql',
+      { query, variables: { username } },
       { headers: { 'Content-Type': 'application/json' } }
     )
 
@@ -34,7 +34,9 @@ async function fetchLeetCodeData(username: string): Promise<PlatformData> {
       const profile = res.data.data.userProfile
       const calendar = res.data.data.userCalendar
       const submissions = profile.submitStats.acSubmissionNum
-      const solvedProblems = submissions.reduce((s: number, sub: any) => s + sub.count, 0)
+      const solvedProblems = submissions
+        .filter((sub: any) => sub.difficulty !== 'All')
+        .reduce((s: number, sub: any) => s + sub.count, 0)
 
       let heatmapData: { date: string; count: number }[] = []
       try {
@@ -72,30 +74,32 @@ async function fetchLeetCodeData(username: string): Promise<PlatformData> {
   }
 }
 
-async function fetchCodeforcesData(username: string): Promise<PlatformData> {
-  const infoRes = await axios.get(`https://codeforces.com/api/user.info?handles=${username}`)
-  if (infoRes.data.status !== 'OK') throw new Error('Codeforces user not found')
+async function fetchCodeforcesData(username: string): Promise<PlatformData | null> {
+  try {
+    const infoRes = await axios.get(`https://codeforces.com/api/user.info?handles=${username}`)
+    if (infoRes.data.status !== 'OK') throw new Error('Codeforces user not found')
 
-  const user = infoRes.data.result[0]
-  const statusRes = await axios.get(`https://codeforces.com/api/user.status?handle=${username}`)
-  const solvedSet = new Set<string>()
-  const heatmapMap: Record<string, number> = {}
+    const user = infoRes.data.result[0]
+    const statusRes = await axios.get(`https://codeforces.com/api/user.status?handle=${username}`)
+    const solvedSet = new Set<string>()
+    const heatmapMap: Record<string, number> = {}
 
-  if (statusRes.data.status === 'OK') {
-    statusRes.data.result.forEach((sub: any) => {
-      const date = new Date(sub.creationTimeSeconds * 1000).toISOString().split('T')[0]
-      heatmapMap[date] = (heatmapMap[date] || 0) + 1
-      if (sub.verdict === 'OK') solvedSet.add(`${sub.problem.contestId}-${sub.problem.index}`)
-    })
-  }
+    if (statusRes.data.status === 'OK') {
+      statusRes.data.result.forEach((sub: any) => {
+        const date = new Date(sub.creationTimeSeconds * 1000).toISOString().split('T')[0]
+        heatmapMap[date] = (heatmapMap[date] || 0) + 1
+        if (sub.verdict === 'OK') solvedSet.add(`${sub.problem.contestId}-${sub.problem.index}`)
+      })
+    }
 
-  return {
-    platform: PLATFORMS.CODEFORCES, username: user.handle, solvedProblems: solvedSet.size,
-    difficultyBreakdown: {}, rating: user.rating || 0,
-    heatmapData: Object.entries(heatmapMap).map(([date, count]) => ({ date, count })).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30),
-    topicDistribution: {}, performanceTrends: [{ rating: user.rating || 0 }],
-    source: 'api'
-  }
+    return {
+      platform: PLATFORMS.CODEFORCES, username: user.handle, solvedProblems: solvedSet.size,
+      difficultyBreakdown: {}, rating: user.rating || 0,
+      heatmapData: Object.entries(heatmapMap).map(([date, count]) => ({ date, count })).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30),
+      topicDistribution: {}, performanceTrends: [{ rating: user.rating || 0 }],
+      source: 'api'
+    }
+  } catch { return null }
 }
 
 async function fetchCodeChefData(username: string): Promise<PlatformData | null> {
@@ -139,7 +143,7 @@ export async function fetchPlatformData(platform: string, username: string): Pro
     case PLATFORMS.LEETCODE: return fetchLeetCodeData(username)
     case PLATFORMS.CODEFORCES: return fetchCodeforcesData(username)
     case PLATFORMS.CODECHEF: return fetchCodeChefData(username)
-    case PLATFORMS.GFG: case 'gfg': return fetchGFGData(username)
+    case PLATFORMS.GFG: return fetchGFGData(username)
     default: throw new Error(`Unsupported platform: ${platform}`)
   }
 }

@@ -30,7 +30,7 @@ vi.mock('@/lib/models/user', () => ({
 describe('Guild API Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    ;(verifyAuth as any).mockResolvedValue({ _id: 'user123', haomunScore: 500 })
+      ; (verifyAuth as any).mockResolvedValue({ _id: 'user123', haomunScore: 500 })
   })
 
   it('should create a guild successfully', async () => {
@@ -39,9 +39,9 @@ describe('Guild API Integration', () => {
       body: JSON.stringify({ name: 'The Ancients', description: 'Power to the old' })
     })
 
-    ;(Guild.findOne as any).mockResolvedValue(null)
-    ;(Guild.create as any).mockResolvedValue({ _id: 'guild123', name: 'The Ancients' })
-    ;(User.findOneAndUpdate as any).mockResolvedValue({ _id: 'user123', guildId: 'guild123' })
+      ; (Guild.findOne as any).mockResolvedValue(null)
+      ; (Guild.create as any).mockResolvedValue({ _id: 'guild123', name: 'The Ancients' })
+      ; (User.findOneAndUpdate as any).mockResolvedValue({ _id: 'user123', guildId: 'guild123' })
 
     const res = await createGuildPOST(req)
     const data = await res.json()
@@ -56,13 +56,15 @@ describe('Guild API Integration', () => {
       body: JSON.stringify({ guildId: 'guild123' })
     })
 
-    ;(User.findOneAndUpdate as any).mockResolvedValue({ _id: 'user123', guildId: 'guild123' })
-    ;(Guild.findByIdAndUpdate as any).mockResolvedValue({})
+      ; (Guild.findById as any).mockResolvedValue({ _id: 'guild123', name: 'The Ancients' })
+      ; (User.findOneAndUpdate as any).mockResolvedValue({ _id: 'user123', guildId: 'guild123' })
+      ; (Guild.findByIdAndUpdate as any).mockResolvedValue({})
 
     const res = await joinGuildPOST(req)
     const data = await res.json()
 
     expect(data.success).toBe(true)
+    expect(Guild.findById).toHaveBeenCalledWith('guild123')
     expect(User.findOneAndUpdate).toHaveBeenCalled()
     expect(Guild.findByIdAndUpdate).toHaveBeenCalled()
   })
@@ -73,12 +75,28 @@ describe('Guild API Integration', () => {
       body: JSON.stringify({ guildId: 'guild123' })
     })
 
-    ;(User.findOneAndUpdate as any).mockResolvedValue(null) // Failed because $exists: false check failed
+      ; (Guild.findById as any).mockResolvedValue({ _id: 'guild123', name: 'The Ancients' })
+      ; (User.findOneAndUpdate as any).mockResolvedValue(null) // Failed because guildId != null
 
     const res = await joinGuildPOST(req)
     const data = await res.json()
 
     expect(data.success).toBe(false)
     expect(data.error).toBe('You are already in a guild or join failed')
+  })
+
+  it('should fail if guild does not exist', async () => {
+    const req = new NextRequest('http://localhost/api/guild/join', {
+      method: 'POST',
+      body: JSON.stringify({ guildId: 'nonexistent' })
+    })
+
+      ; (Guild.findById as any).mockResolvedValue(null)
+
+    const res = await joinGuildPOST(req)
+    const data = await res.json()
+
+    expect(data.success).toBe(false)
+    expect(data.error).toBe('Guild not found')
   })
 })

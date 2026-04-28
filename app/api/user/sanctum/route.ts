@@ -8,6 +8,7 @@ import { aggregateProfiles } from '@/lib/services/analysis'
 
 async function handleSanctum(req: NextRequest) {
   try {
+    await connectDB()
     const user = await verifyAuth(req)
 
     const platforms: Record<string, string | undefined> = {
@@ -33,7 +34,7 @@ async function handleSanctum(req: NextRequest) {
     }
 
     const aggregated = aggregateProfiles(valid)
-    
+
     // Consolidate topics
     const topicDistribution: Record<string, number> = {}
     aggregated.profiles.forEach(p => {
@@ -48,20 +49,23 @@ async function handleSanctum(req: NextRequest) {
       topicDistribution,
       scoreHistory: user.scoreHistory || []
     }
-
-    await connectDB()
     const lastHistory = user.scoreHistory?.[user.scoreHistory.length - 1]
-    const shouldPushHistory = !lastHistory || 
+    const shouldPushHistory = !lastHistory ||
       (new Date().getTime() - new Date(lastHistory.timestamp).getTime() > 1000 * 60 * 60 * 12) ||
       (aggregated.unifiedScore.score !== user.haomunScore)
 
-    const updateFields: any = { 
-      haomunScore: aggregated.unifiedScore.score, 
-      masteryLevel: aggregated.unifiedScore.level 
+    const updateFields: any = {
+      haomunScore: aggregated.unifiedScore.score,
+      masteryLevel: aggregated.unifiedScore.level
     }
-    
+
     if (shouldPushHistory) {
-      updateFields.$push = { scoreHistory: { score: aggregated.unifiedScore.score, timestamp: new Date() } }
+      updateFields.$push = {
+        scoreHistory: {
+          $each: [{ score: aggregated.unifiedScore.score, timestamp: new Date() }],
+          $slice: -200
+        }
+      }
     }
 
     if (aggregated.unifiedScore.score !== user.haomunScore || aggregated.unifiedScore.level !== user.masteryLevel || shouldPushHistory) {

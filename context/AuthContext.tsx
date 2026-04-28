@@ -1,8 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { getProfile } from '@/utils/api'
-import { clearAuthCookie } from '@/utils/auth'
+import { getProfile } from '@/lib/api/client'
+import { clearAuthCookie } from '@/lib/api/auth'
 import { useRouter } from 'next/navigation'
 
 interface AuthContextType {
@@ -39,7 +39,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser()
   }, [refreshUser])
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/api/user/logout', { method: 'POST' })
+    } catch { /* proceed with client cleanup regardless */ }
     clearAuthCookie()
     setUser(null)
     router.push('/login')

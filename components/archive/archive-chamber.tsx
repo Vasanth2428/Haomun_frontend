@@ -25,15 +25,15 @@ export default function ArchiveChamber({ onForge }: ArchiveChamberProps) {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const { getArchive, getActivity } = await import('@/utils/api')
+        const { getArchive, getActivity } = await import('@/lib/api/client')
         const [archiveRes, activityRes] = await Promise.all([
-          getArchive(controller.signal), 
+          getArchive(controller.signal),
           getActivity(controller.signal)
         ])
-        
+
         if (archiveRes.success) setArchives(archiveRes.data || [])
         if (activityRes.success) setChartData(activityRes.data || [])
-        
+
         if (!archiveRes.success && !activityRes.success) {
           setError('Failed to retrieve historical records.')
         }

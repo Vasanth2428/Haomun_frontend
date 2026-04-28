@@ -14,9 +14,15 @@ export async function POST(req: NextRequest) {
 
     await connectDB()
 
+    // Verify guild exists before joining
+    const guild = await Guild.findById(guildId)
+    if (!guild) {
+      return Response.json({ success: false, error: 'Guild not found' }, { status: 404 })
+    }
+
     // Atomic join: Only update if user is NOT in a guild
     const updatedUser = await User.findOneAndUpdate(
-      { _id: user._id, guildId: { $exists: false } },
+      { _id: user._id, guildId: null },
       { guildId },
       { new: true }
     )

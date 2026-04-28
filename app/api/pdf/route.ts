@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
     const validation = pdfRequestSchema.safeParse(body)
 
     if (!validation.success) {
-      return Response.json({ 
-        success: false, 
-        error: validation.error.errors[0].message 
+      return Response.json({
+        success: false,
+        error: validation.error.errors[0].message
       }, { status: 400 })
     }
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     await verifyAuth(req)
     const url = new URL(req.url)
     const summary = url.searchParams.get('summary') || ''
-    
+
     let insights = {}
     const insightsParam = url.searchParams.get('insights')
     if (insightsParam) {
@@ -49,7 +49,15 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const pdfBuffer = await generateReportPDF(summary, insights)
+    const validation = pdfRequestSchema.safeParse({ summary, insights })
+    if (!validation.success) {
+      return Response.json({
+        success: false,
+        error: validation.error.errors[0].message
+      }, { status: 400 })
+    }
+
+    const pdfBuffer = await generateReportPDF(validation.data.summary, validation.data.insights)
 
     return new Response(pdfBuffer as any, {
       headers: {

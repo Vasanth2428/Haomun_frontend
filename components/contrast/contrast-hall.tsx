@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { compareAllies } from '@/utils/api'
+import { compareAllies } from '@/lib/api/client'
 import CompareChart from '@/components/charts/CompareChart'
 import { PLATFORMS } from '@/lib/constants'
 import styles from './contrast-hall.module.css'

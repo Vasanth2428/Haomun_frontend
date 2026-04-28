@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { login, register, setAuthToken } from '@/utils/api'
+import { login, register, setAuthToken } from '@/lib/api/client'
 import styles from './auth-modal.module.css'
 
 interface AuthModalProps {

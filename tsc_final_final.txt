@@ -1,3 +1,0 @@
-﻿lib/models/user.ts(50,16): error TS2769: No overload matches this call.
-  The last overload gave the following error.
-    Argument of type '"save"' is not assignable to parameter of type 'RegExp | "createCollection"'.

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { unveilInsight } from '@/utils/api'
+import { unveilInsight } from '@/lib/api/client'
 import { PLATFORMS } from '@/lib/constants'
 import DifficultyChart from '@/components/charts/DifficultyChart'
 import styles from './insight-pavilion.module.css'
@@ -41,7 +41,7 @@ export default function InsightPavilion({ onForge }: InsightPavilionProps) {
       <div className={styles.headerArea} style={{ textAlign: 'center', marginBottom: '48px' }}>
         <h1 className="text-gradient-gold" style={{ fontSize: '3.5rem', marginBottom: '16px' }}>Insight Pavilion</h1>
         <p style={{ color: 'var(--haomun-mist)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto' }}>
-          Enter your digital seal to manifest the patterns of your mastery through the Oracle's eye.
+          Enter your digital seal to manifest the patterns of your mastery through the Oracle&apos;s eye.
         </p>
       </div>
 

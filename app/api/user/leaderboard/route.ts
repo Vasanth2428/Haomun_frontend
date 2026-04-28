@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const filter = searchParams.get('filter')
 
     await connectDB()
-    
+
     let query = {}
     if (filter === 'friends') {
       const currentUser = await User.findById(user._id)
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     }
 
     const leaderboard = await User.find(query)
-      .select('displayName leetcodeUsername codeforcesUsername haomunScore masteryLevel avatarUrl')
+      .select('username leetcodeUsername codeforcesUsername haomunScore masteryLevel avatarUrl')
       .sort({ haomunScore: -1 })
       .limit(20)
 

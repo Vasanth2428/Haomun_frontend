@@ -10,11 +10,12 @@ export async function GET(req: NextRequest) {
     await connectDB()
     const guilds = await Guild.find({})
       .sort({ totalScore: -1 })
-      .populate('leader', 'displayName username avatarUrl')
+      .populate('leader', 'username avatarUrl')
       .limit(50)
 
     return Response.json({ success: true, data: guilds })
   } catch (e: any) {
+    if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })
   }
 }

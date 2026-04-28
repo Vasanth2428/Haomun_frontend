@@ -24,15 +24,15 @@ export async function GET(req: NextRequest) {
     await connectDB()
     const users = await User.find({
       $or: [
-        { displayName: { $regex: safe, $options: 'i' } },
+        { username: { $regex: safe, $options: 'i' } },
         { leetcodeUsername: { $regex: safe, $options: 'i' } },
         { codeforcesUsername: { $regex: safe, $options: 'i' } },
         { codechefUsername: { $regex: safe, $options: 'i' } },
         { gfgUsername: { $regex: safe, $options: 'i' } },
       ]
     })
-    .select('displayName avatarUrl haomunScore masteryLevel leetcodeUsername codeforcesUsername')
-    .limit(10)
+      .select('username avatarUrl haomunScore masteryLevel leetcodeUsername codeforcesUsername')
+      .limit(10)
 
     return Response.json({ success: true, data: users })
   } catch (e: any) {
