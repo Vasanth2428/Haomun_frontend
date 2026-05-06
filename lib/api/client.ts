@@ -3,9 +3,9 @@ import { getAuthToken as getToken, setAuthCookie, clearAuthCookie } from '@/lib/
 // Use relative paths — API routes are now served by the same Next.js app
 const BASE_URL = ''
 
-function getAuthToken() {
-    return getToken();
-}
+// function getAuthToken() {
+//     return getToken();
+// }
 
 export function setAuthToken(token: string) {
     setAuthCookie(token);
@@ -92,8 +92,12 @@ export async function searchUsers(query: string, signal?: AbortSignal) {
     return apiRequest(`/api/user/search?q=${query}`, null, 'GET', signal);
 }
 
-export async function getLeaderboard(filter?: string, signal?: AbortSignal) {
-    const path = filter ? `/api/user/leaderboard?filter=${filter}` : '/api/user/leaderboard';
+export async function getLeaderboard(filter?: string, cursor?: string, signal?: AbortSignal) {
+    const params = new URLSearchParams();
+    if (filter) params.append('filter', filter);
+    if (cursor) params.append('cursor', cursor);
+    const qs = params.toString();
+    const path = qs ? `/api/user/leaderboard?${qs}` : '/api/user/leaderboard';
     return apiRequest(path, null, 'GET', signal);
 }
 

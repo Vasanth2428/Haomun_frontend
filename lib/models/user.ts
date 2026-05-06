@@ -57,6 +57,13 @@ const userSchema = new Schema<IUser>({
 userSchema.index({ email: 1 })
 userSchema.index({ username: 1 })
 userSchema.index({ haomunScore: -1 }) // Descending for leaderboard
+userSchema.index({ 
+  username: 'text', 
+  leetcodeUsername: 'text',
+  codeforcesUsername: 'text',
+  codechefUsername: 'text',
+  gfgUsername: 'text'
+})
 
 // Hash password before saving
 userSchema.pre('save', async function (this: any) {

@@ -3,21 +3,18 @@ import { NextRequest } from 'next/server'
 import connectDB from '@/lib/db'
 import User, { IUser } from '@/lib/models/user'
 
-// JWT_SECRET check moved to functions
+const JWT_SECRET = process.env.JWT_SECRET as string
+
+if (!JWT_SECRET) {
+  console.error('JWT_SECRET is not defined')
+  throw new Error('Please define the JWT_SECRET environment variable inside .env.local')
+}
 
 export function generateToken(userId: string): string {
-  const JWT_SECRET = process.env.JWT_SECRET
-  if (!JWT_SECRET) {
-    throw new Error('Please define the JWT_SECRET environment variable inside .env.local')
-  }
   return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '7d' })
 }
 
 export async function verifyAuth(req: NextRequest): Promise<IUser> {
-  const JWT_SECRET = process.env.JWT_SECRET
-  if (!JWT_SECRET) {
-    throw new Error('Please define the JWT_SECRET environment variable inside .env.local')
-  }
   const cookieToken = req.cookies.get('haomun_token')?.value
   const authHeader = req.headers.get('Authorization')
   const headerToken = authHeader?.replace('Bearer ', '')

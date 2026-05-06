@@ -37,10 +37,11 @@ describe('calculateHaoMunScore', () => {
     expect(result.level).toBe('Master')
   })
 
-  it('should handle missing data gracefully', () => {
-    const profiles = [null, { platform: 'leetcode', solvedProblems: 'abc', rating: null }]
-    const result = calculateHaoMunScore(profiles as any)
-    expect(result.score).toBe(0)
-    expect(result.level).toBe('Apprentice')
+  it('should throw an error for missing or invalid data', () => {
+    const profiles = [{ platform: 'leetcode', solvedProblems: 'abc', rating: null }]
+    expect(() => calculateHaoMunScore(profiles as any)).toThrowError(/Data Pipeline Error/i)
+
+    const profilesMissing = [{ platform: 'codeforces', rating: '1200' }]
+    expect(() => calculateHaoMunScore(profilesMissing as any)).toThrowError(/Data Pipeline Error/i)
   })
 })

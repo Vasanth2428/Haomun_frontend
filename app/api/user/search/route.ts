@@ -22,17 +22,31 @@ export async function GET(req: NextRequest) {
     const safe = escapeRegex(q)
 
     await connectDB()
-    const users = await User.find({
-      $or: [
-        { username: { $regex: safe, $options: 'i' } },
-        { leetcodeUsername: { $regex: safe, $options: 'i' } },
-        { codeforcesUsername: { $regex: safe, $options: 'i' } },
-        { codechefUsername: { $regex: safe, $options: 'i' } },
-        { gfgUsername: { $regex: safe, $options: 'i' } },
-      ]
-    })
+    
+    // Attempt full-text search first (matches whole words based on the text index)
+    let users = await User.find(
+      { $text: { $search: q } },
+      { score: { $meta: 'textScore' } }
+    )
+      .sort({ score: { $meta: 'textScore' } })
       .select('username avatarUrl haomunScore masteryLevel leetcodeUsername codeforcesUsername')
       .limit(10)
+
+    // Fallback to regex for partial substring matches if text search yields no results
+    if (users.length === 0) {
+      const safe = escapeRegex(q)
+      users = await User.find({
+        $or: [
+          { username: { $regex: safe, $options: 'i' } },
+          { leetcodeUsername: { $regex: safe, $options: 'i' } },
+          { codeforcesUsername: { $regex: safe, $options: 'i' } },
+          { codechefUsername: { $regex: safe, $options: 'i' } },
+          { gfgUsername: { $regex: safe, $options: 'i' } },
+        ]
+      })
+        .select('username avatarUrl haomunScore masteryLevel leetcodeUsername codeforcesUsername')
+        .limit(10)
+    }
 
     return Response.json({ success: true, data: users })
   } catch (e: any) {

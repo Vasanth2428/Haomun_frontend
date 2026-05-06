@@ -2,15 +2,14 @@
 
 import InsightPavilion from '@/components/pavilion/insight-pavilion'
 import { useRouter } from 'next/navigation'
+import { useForgeStore } from '@/lib/store/forgeStore'
 
 export default function PavilionPage() {
   const router = useRouter()
+  const setForgeData = useForgeStore(state => state.setForgeData)
 
   const navigateToForge = (data: any) => {
-    // Store forge data in sessionStorage for cross-page transfer
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('forgeData', JSON.stringify(data))
-    }
+    setForgeData(data)
     router.push('/forge')
   }
 

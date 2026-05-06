@@ -30,7 +30,7 @@ describe('Auth API Integration', () => {
   it('should register a new user successfully', async () => {
     const req = new NextRequest('http://localhost/api/user/register', {
       method: 'POST',
-      body: JSON.stringify({ email: 'test@example.com', password: 'password123', displayName: 'Tester' })
+      body: JSON.stringify({ email: 'test@example.com', password: 'password123', username: 'Tester' })
     })
 
     ;(User.findOne as any).mockResolvedValue(null)

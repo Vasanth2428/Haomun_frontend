@@ -1,14 +1,25 @@
 import { PLATFORMS } from '../constants'
 
 export function analyzeStats(data: any) {
+  if (data.solvedProblems === undefined || data.solvedProblems === null) {
+    throw new Error(`Data Pipeline Error: solvedProblems is missing for platform ${data.platform || 'unknown'}`)
+  }
+  const parsedSolved = parseInt(data.solvedProblems)
+  if (isNaN(parsedSolved)) {
+    throw new Error(`Data Pipeline Error: solvedProblems "${data.solvedProblems}" is invalid for platform ${data.platform || 'unknown'}`)
+  }
+
+  const parsedRating = data.rating !== undefined && data.rating !== null ? parseInt(data.rating) : 0;
+  const rating = isNaN(parsedRating) ? 0 : Math.max(0, parsedRating);
+
   const insights: any = {
-    solvedProblems: parseInt(data.solvedProblems) || 0,
+    solvedProblems: Math.max(0, parsedSolved),
     heatmapData: Array.isArray(data.heatmapData) ? data.heatmapData : [],
     topicDistribution: data.topicDistribution || {},
     performanceTrends: Array.isArray(data.performanceTrends) ? data.performanceTrends : [],
     difficultyBreakdown: data.difficultyBreakdown || { easy: 0, medium: 0, hard: 0 },
     platform: data.platform || 'unknown',
-    rating: parseInt(data.rating) || 0,
+    rating,
   }
 
   const b = insights.difficultyBreakdown
@@ -26,10 +37,19 @@ export function calculateHaoMunScore(profiles: any[]) {
   profiles.forEach(p => {
     if (!p) return
     platformCount++
-    const solved = parseInt(p.solvedProblems) || 0
+    
+    if (p.solvedProblems === undefined || p.solvedProblems === null) {
+      throw new Error(`Data Pipeline Error: solvedProblems is missing for platform ${p.platform || 'unknown'}`)
+    }
+    const parsedSolved = parseInt(p.solvedProblems)
+    if (isNaN(parsedSolved)) {
+      throw new Error(`Data Pipeline Error: solvedProblems "${p.solvedProblems}" is invalid for platform ${p.platform || 'unknown'}`)
+    }
+    const solved = Math.max(0, parsedSolved)
     totalSolved += solved
     
-    const rating = Math.max(0, parseInt(p.rating) || 0)
+    const parsedRating = p.rating !== undefined && p.rating !== null ? parseInt(p.rating) : 0;
+    const rating = isNaN(parsedRating) ? 0 : Math.max(0, parsedRating)
     if (rating > maxRating) maxRating = rating
     
     const heats = Array.isArray(p.heatmapData) ? p.heatmapData.length : 0

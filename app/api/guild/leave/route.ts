@@ -36,14 +36,27 @@ export async function POST(req: NextRequest) {
             }, { status: 400 })
         }
 
-        // Remove user from guild and subtract their score
+        const currentScore = currentUser.haomunScore || 0;
+
+        // ATOMIC FIX: Optimistic locking on the user's score to prevent race conditions
+        // We atomically clear the user's guildId ONLY IF their score hasn't changed since we fetched it.
+        const atomicUserUpdate = await User.findOneAndUpdate(
+            { _id: user._id, guildId: guild._id, haomunScore: currentScore },
+            { $unset: { guildId: 1 } }
+        );
+
+        if (!atomicUserUpdate) {
+            return Response.json({ 
+                success: false, 
+                error: 'Your score was updated while leaving the guild. Please try again to ensure accurate guild synchronization.' 
+            }, { status: 409 });
+        }
+
+        // Now we safely decrement the exact score we locked in
         await Guild.findByIdAndUpdate(guild._id, {
             $pull: { members: user._id },
-            $inc: { totalScore: -(currentUser.haomunScore || 0) }
+            $inc: { totalScore: -currentScore }
         })
-
-        // Clear user's guild reference
-        await User.findByIdAndUpdate(user._id, { $unset: { guildId: 1 } })
 
         return Response.json({ success: true, message: 'Left the guild successfully' })
     } catch (e: any) {
