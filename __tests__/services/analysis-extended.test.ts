@@ -21,7 +21,7 @@ describe('Analysis Service', () => {
       expect(result.totalDifficulty).toBe(100)
     })
 
-    it('should handle null values in input', () => {
+    it('should throw error for null solvedProblems', () => {
       const input = {
         solvedProblems: null,
         rating: null,
@@ -30,16 +30,22 @@ describe('Analysis Service', () => {
         topicDistribution: null
       }
 
-      const result = analyzeStats(input)
+      expect(() => analyzeStats(input)).toThrow('solvedProblems is missing')
+    })
 
-      expect(result.solvedProblems).toBe(0)
-      expect(result.rating).toBe(0)
-      expect(result.difficultyBreakdown).toEqual({ easy: 0, medium: 0, hard: 0 })
-      expect(result.heatmapData).toEqual([])
+    it('should throw error for undefined solvedProblems', () => {
+      const input = {
+        solvedProblems: undefined,
+        platform: 'leetcode'
+      }
+
+      expect(() => analyzeStats(input)).toThrow('solvedProblems is missing')
     })
 
     it('should calculate average difficulty correctly', () => {
       const input = {
+        platform: 'leetcode',
+        solvedProblems: '100',
         difficultyBreakdown: { easy: 50, medium: 30, hard: 20 }
       }
 
@@ -50,6 +56,8 @@ describe('Analysis Service', () => {
 
     it('should handle non-numeric difficulty values in calculations', () => {
       const input = {
+        platform: 'leetcode',
+        solvedProblems: '100',
         difficultyBreakdown: { easy: 'abc', medium: 'def', hard: 'ghi' }
       }
 
