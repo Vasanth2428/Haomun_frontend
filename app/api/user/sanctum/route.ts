@@ -1,21 +1,19 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
 import { verifyAuth, authError } from '@/lib/auth'
 import { fetchPlatformData } from '@/lib/services/fetch'
 import { aggregateProfiles } from '@/lib/services/analysis'
+import { updateUserById } from '@/lib/supabase'
 
 async function handleSanctum(req: NextRequest) {
   try {
-    await connectDB()
     const user = await verifyAuth(req)
 
     const platforms: Record<string, string | undefined> = {
-      leetcode: user.leetcodeUsername,
-      codeforces: user.codeforcesUsername,
-      codechef: user.codechefUsername,
-      gfg: user.gfgUsername,
+      leetcode: user.leetcodeUsername || undefined,
+      codeforces: user.codeforcesUsername || undefined,
+      codechef: user.codechefUsername || undefined,
+      gfg: user.gfgUsername || undefined,
     }
 
     const active = Object.entries(platforms).filter(([, u]) => !!u)
@@ -35,7 +33,6 @@ async function handleSanctum(req: NextRequest) {
 
     const aggregated = aggregateProfiles(valid)
 
-    // Consolidate topics
     const topicDistribution: Record<string, number> = {}
     aggregated.profiles.forEach(p => {
       Object.entries(p.topicDistribution || {}).forEach(([tag, count]) => {
@@ -43,7 +40,6 @@ async function handleSanctum(req: NextRequest) {
       })
     })
 
-    // Add scoreHistory and consolidated topics
     const finalData = {
       ...aggregated,
       topicDistribution,
@@ -54,22 +50,16 @@ async function handleSanctum(req: NextRequest) {
       (new Date().getTime() - new Date(lastHistory.timestamp).getTime() > 1000 * 60 * 60 * 12) ||
       (aggregated.unifiedScore.score !== user.haomunScore)
 
-    const updateFields: any = {
-      haomunScore: aggregated.unifiedScore.score,
-      masteryLevel: aggregated.unifiedScore.level
-    }
-
-    if (shouldPushHistory) {
-      updateFields.$push = {
-        scoreHistory: {
-          $each: [{ score: aggregated.unifiedScore.score, timestamp: new Date() }],
-          $slice: -200
-        }
-      }
-    }
+    const updatedScoreHistory = shouldPushHistory
+      ? [...(user.scoreHistory || []), { score: aggregated.unifiedScore.score, timestamp: new Date() }].slice(-200)
+      : user.scoreHistory || []
 
     if (aggregated.unifiedScore.score !== user.haomunScore || aggregated.unifiedScore.level !== user.masteryLevel || shouldPushHistory) {
-      await User.findByIdAndUpdate(user._id, updateFields)
+      await updateUserById(user._id, {
+        haomunScore: aggregated.unifiedScore.score,
+        masteryLevel: aggregated.unifiedScore.level,
+        scoreHistory: updatedScoreHistory,
+      })
     }
 
     return Response.json({ success: true, data: finalData })

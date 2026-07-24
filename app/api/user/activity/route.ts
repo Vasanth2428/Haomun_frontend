@@ -1,14 +1,11 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
 import { verifyAuth, authError } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
-    await connectDB()
-    const userData = await User.findById(user._id)
+    const userData = user
 
     // For now, we take it from lastSkillAnalysis if available
     // Otherwise, we mock it based on total solved until we have a proper history log

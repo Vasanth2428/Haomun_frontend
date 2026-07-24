@@ -15,7 +15,7 @@ export default function Leaderboard({ friendsOnly = false }: { friendsOnly?: boo
     async function fetchLeaderboard(signal?: AbortSignal) {
       setLoading(true)
       try {
-        const result = await getLeaderboard(friendsOnly ? 'friends' : undefined, signal)
+        const result = await getLeaderboard(friendsOnly ? 'friends' : undefined, undefined, signal)
         if (result.success) {
           setEntries(result.data)
         } else {

@@ -1,11 +1,9 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
-import { generateToken } from '@/lib/auth'
-
 import { loginSchema } from '@/lib/validations'
+import { findUserByEmail, comparePasswordHash, safeUser } from '@/lib/supabase'
+import { generateToken } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,20 +18,18 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = validation.data
-
-    await connectDB()
-    const user = await User.findOne({ email })
+    const user = await findUserByEmail(email)
     if (!user) {
       return Response.json({ success: false, error: 'Invalid credentials' }, { status: 401 })
     }
 
-    const isMatch = await user.comparePassword(password)
+    const isMatch = await comparePasswordHash(password, user.password)
     if (!isMatch) {
       return Response.json({ success: false, error: 'Invalid credentials' }, { status: 401 })
     }
 
-    const token = generateToken(user._id.toString())
-    const { password: _, ...safeUser } = user.toObject()
+    const token = generateToken(user._id)
+    const safe = safeUser(user)
 
     const cookieStore = await cookies()
     cookieStore.set('haomun_token', token, {
@@ -44,7 +40,6 @@ export async function POST(req: NextRequest) {
       maxAge: 7 * 24 * 60 * 60 // 1 week
     })
 
-    // Set UI hint cookie (non-HttpOnly)
     cookieStore.set('haomun_logged_in', 'true', {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -52,10 +47,7 @@ export async function POST(req: NextRequest) {
       maxAge: 7 * 24 * 60 * 60
     })
 
-    return Response.json({ 
-      success: true, 
-      data: safeUser
-    })
+    return Response.json({ success: true, data: safe })
   } catch (e: any) {
     return Response.json({ success: false, error: e.message }, { status: 401 })
   }

@@ -1,17 +1,12 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import Guild from '@/lib/models/guild'
 import { verifyAuth, authError } from '@/lib/auth'
+import { listGuilds } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   try {
     await verifyAuth(req)
-    await connectDB()
-    const guilds = await Guild.find({})
-      .sort({ totalScore: -1 })
-      .populate('leader', 'username avatarUrl')
-      .limit(50)
+    const guilds = await listGuilds()
 
     return Response.json({ success: true, data: guilds })
   } catch (e: any) {

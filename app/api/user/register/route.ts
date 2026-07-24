@@ -1,11 +1,9 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
 import { generateToken } from '@/lib/auth'
-
 import { registerSchema } from '@/lib/validations'
+import { findUserByEmail, findUserByUsername, createUser, safeUser } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,24 +18,21 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password, username } = validation.data
-    await connectDB()
-
-    const existingUser = await User.findOne({ email })
+    const existingUser = await findUserByEmail(email)
     if (existingUser) {
       return Response.json({ success: false, error: 'User already exists' }, { status: 400 })
     }
 
     if (username) {
-      const existingUsername = await User.findOne({ username })
+      const existingUsername = await findUserByUsername(username)
       if (existingUsername) {
         return Response.json({ success: false, error: 'Moniker already claimed by another seeker' }, { status: 400 })
       }
     }
 
-    const user = await User.create({ email, password, username })
-
-    const token = generateToken(user._id.toString())
-    const { password: _, ...safeUser } = user.toObject()
+    const user = await createUser({ email, password, username })
+    const token = generateToken(user._id)
+    const safe = safeUser(user)
 
     const cookieStore = await cookies()
     cookieStore.set('haomun_token', token, {
@@ -48,7 +43,6 @@ export async function POST(req: NextRequest) {
       maxAge: 7 * 24 * 60 * 60 // 1 week
     })
 
-    // Set UI hint cookie (non-HttpOnly)
     cookieStore.set('haomun_logged_in', 'true', {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -56,10 +50,7 @@ export async function POST(req: NextRequest) {
       maxAge: 7 * 24 * 60 * 60
     })
 
-    return Response.json({ 
-      success: true, 
-      data: safeUser
-    }, { status: 201 })
+    return Response.json({ success: true, data: safe }, { status: 201 })
   } catch (e: any) {
     return Response.json({ success: false, error: e.message }, { status: 400 })
   }

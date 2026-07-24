@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import User, { IUser } from '@/lib/models/user'
+import { findUserById, SupabaseUser } from '@/lib/supabase'
 
 const JWT_SECRET = process.env.JWT_SECRET as string
 
@@ -14,7 +13,7 @@ export function generateToken(userId: string): string {
   return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '7d' })
 }
 
-export async function verifyAuth(req: NextRequest): Promise<IUser> {
+export async function verifyAuth(req: NextRequest): Promise<SupabaseUser> {
   const cookieToken = req.cookies.get('haomun_token')?.value
   const authHeader = req.headers.get('Authorization')
   const headerToken = authHeader?.replace('Bearer ', '')
@@ -27,9 +26,7 @@ export async function verifyAuth(req: NextRequest): Promise<IUser> {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string }
-
-    await connectDB()
-    const user = await User.findById(decoded.id)
+    const user = await findUserById(decoded.id)
 
     if (!user) {
       throw new Error('User not found')

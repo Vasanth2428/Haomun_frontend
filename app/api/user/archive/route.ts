@@ -1,9 +1,8 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
 import { verifyAuth, authError } from '@/lib/auth'
 import { z } from 'zod'
+import { appendUserArchive, getUserArchives, removeUserArchive } from '@/lib/supabase'
 
 const archiveSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -13,9 +12,8 @@ const archiveSchema = z.object({
 export async function GET(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
-    await connectDB()
-    const userData = await User.findById(user._id).select('archives')
-    return Response.json({ success: true, data: userData?.archives || [] })
+    const archives = await getUserArchives(user._id)
+    return Response.json({ success: true, data: archives })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })
@@ -35,24 +33,15 @@ export async function POST(req: NextRequest) {
       }, { status: 400 })
     }
 
-    await connectDB()
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      {
-        $push: {
-          archives: {
-            $each: [{
-              ...validation.data,
-              timestamp: new Date()
-            }],
-            $slice: -100
-          }
-        }
-      },
-      { new: true }
-    )
+    const archiveItem = {
+      id: crypto.randomUUID(),
+      title: validation.data.title,
+      content: validation.data.content,
+      timestamp: new Date().toISOString(),
+    }
 
-    return Response.json({ success: true, data: updatedUser?.archives })
+    const updatedUser = await appendUserArchive(user._id, archiveItem)
+    return Response.json({ success: true, data: updatedUser?.archives || [] })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })
@@ -69,13 +58,7 @@ export async function DELETE(req: NextRequest) {
       return Response.json({ success: false, error: 'Archive ID is required' }, { status: 400 })
     }
 
-    await connectDB()
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $pull: { archives: { _id: archiveId } } },
-      { new: true }
-    )
-
+    const updatedUser = await removeUserArchive(user._id, archiveId)
     return Response.json({ success: true, data: updatedUser?.archives || [] })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()

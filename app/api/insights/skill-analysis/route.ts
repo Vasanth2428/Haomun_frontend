@@ -1,11 +1,10 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
 import { verifyAuth, authError } from '@/lib/auth'
 import { fetchPlatformData } from '@/lib/services/fetch'
 import { aggregateProfiles } from '@/lib/services/analysis'
 import { generateSkillAnalysis } from '@/lib/services/ai'
+import { updateUserById } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,29 +27,22 @@ export async function GET(req: NextRequest) {
     const aggregated = aggregateProfiles(valid)
     const analysis = await generateSkillAnalysis(aggregated)
 
-    await connectDB()
     const lastHistory = user.scoreHistory?.[user.scoreHistory.length - 1]
     const shouldPushHistory = !lastHistory ||
       (new Date().getTime() - new Date(lastHistory.timestamp).getTime() > 1000 * 60 * 60 * 12) ||
       (aggregated.unifiedScore.score !== user.haomunScore)
 
-    const updateFields: any = {
+    const updatedScoreHistory = shouldPushHistory
+      ? [...(user.scoreHistory || []), { score: aggregated.unifiedScore.score, timestamp: new Date() }].slice(-200)
+      : user.scoreHistory || []
+
+    await updateUserById(user._id, {
       haomunScore: aggregated.unifiedScore.score,
       masteryLevel: aggregated.unifiedScore.level,
       lastSkillAnalysis: analysis,
       lastAnalysisDate: new Date(),
-    }
-
-    if (shouldPushHistory) {
-      updateFields.$push = {
-        scoreHistory: {
-          $each: [{ score: aggregated.unifiedScore.score, timestamp: new Date() }],
-          $slice: -200
-        }
-      }
-    }
-
-    await User.findByIdAndUpdate(user._id, updateFields)
+      scoreHistory: updatedScoreHistory,
+    })
 
     return Response.json({ success: true, data: analysis })
   } catch (e: any) {

@@ -1,16 +1,14 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
 import { verifyAuth, authError } from '@/lib/auth'
 import { friendSchema } from '@/lib/validations'
+import { getUserFriends, addFriendPair, removeFriendPair } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
-    await connectDB()
-    const userData = await User.findById(user._id).populate('friends', 'username email avatarUrl haomunScore masteryLevel')
-    return Response.json({ success: true, data: userData?.friends || [] })
+    const friends = await getUserFriends(user._id)
+    return Response.json({ success: true, data: friends })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })
@@ -31,24 +29,16 @@ export async function POST(req: NextRequest) {
     }
 
     const { friendId } = validation.data
-    if (friendId === user._id.toString()) {
+    if (friendId === user._id) {
       return Response.json({ success: false, error: 'Cannot add yourself as a friend' }, { status: 400 })
     }
 
-    await connectDB()
-    const friend = await User.findById(friendId)
-    if (!friend) {
-      return Response.json({ success: false, error: 'User not found' }, { status: 404 })
+    const friends = await addFriendPair(user._id, friendId)
+    if (!friends) {
+      return Response.json({ success: false, error: 'Could not add friend' }, { status: 400 })
     }
 
-    // Bidirectional add
-    await Promise.all([
-      User.findByIdAndUpdate(user._id, { $addToSet: { friends: friendId } }),
-      User.findByIdAndUpdate(friendId, { $addToSet: { friends: user._id } })
-    ])
-
-    const updatedUser = await User.findById(user._id).populate('friends', 'username email avatarUrl haomunScore masteryLevel')
-    return Response.json({ success: true, data: updatedUser?.friends })
+    return Response.json({ success: true, data: friends })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })
@@ -65,15 +55,12 @@ export async function DELETE(req: NextRequest) {
       return Response.json({ success: false, error: 'Friend ID is required' }, { status: 400 })
     }
 
-    await connectDB()
-    // Bidirectional remove
-    await Promise.all([
-      User.findByIdAndUpdate(user._id, { $pull: { friends: friendId } }),
-      User.findByIdAndUpdate(friendId, { $pull: { friends: user._id } })
-    ])
+    const friends = await removeFriendPair(user._id, friendId)
+    if (!friends) {
+      return Response.json({ success: false, error: 'Could not remove friend' }, { status: 400 })
+    }
 
-    const updatedUser = await User.findById(user._id).populate('friends', 'username email avatarUrl haomunScore masteryLevel')
-    return Response.json({ success: true, data: updatedUser?.friends })
+    return Response.json({ success: true, data: friends })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 500 })

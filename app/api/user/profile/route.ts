@@ -1,19 +1,18 @@
 export const runtime = 'nodejs'
 import { NextRequest } from 'next/server'
-import connectDB from '@/lib/db'
-import User from '@/lib/models/user'
-import { PLATFORMS } from '@/lib/constants'
 import { verifyAuth, authError } from '@/lib/auth'
+import { profileUpdateSchema } from '@/lib/validations'
+import { PLATFORMS } from '@/lib/constants'
+import { comparePasswordHash, safeUser, updateUserById } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   try {
     const user = await verifyAuth(req)
-    const { password: _, ...safeUser } = user.toObject()
-    return Response.json({ success: true, data: safeUser })
-  } catch { return authError() }
+    return Response.json({ success: true, data: safeUser(user) })
+  } catch {
+    return authError()
+  }
 }
-
-import { profileUpdateSchema } from '@/lib/validations'
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -29,21 +28,20 @@ export async function PATCH(req: NextRequest) {
     }
 
     const { username, email, bio, platforms, avatarUrl, currentPassword, newPassword } = validation.data
-    await connectDB()
     const updates: any = {}
     if (username) updates.username = username
     if (email) updates.email = email
     if (bio !== undefined) updates.bio = bio
     if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl
 
-    // Handle password change
     if (currentPassword && newPassword) {
-      const isMatch = await user.comparePassword(currentPassword)
+      const isMatch = await comparePasswordHash(currentPassword, user.password)
       if (!isMatch) {
         return Response.json({ success: false, error: 'Current password is incorrect' }, { status: 400 })
       }
       updates.password = newPassword
     }
+
     if (platforms) {
       const platformMapping: Record<string, string> = {
         [PLATFORMS.LEETCODE]: 'leetcodeUsername',
@@ -59,8 +57,8 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    const updated = await User.findByIdAndUpdate(user._id, updates, { new: true }).select('-password')
-    return Response.json({ success: true, data: updated })
+    const updated = await updateUserById(user._id, updates)
+    return Response.json({ success: true, data: safeUser(updated) })
   } catch (e: any) {
     if (e.message === 'No token provided' || e.message === 'User not found') return authError()
     return Response.json({ success: false, error: e.message }, { status: 400 })
