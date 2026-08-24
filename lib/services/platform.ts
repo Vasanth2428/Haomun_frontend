@@ -18,5 +18,8 @@ export async function getPlatformStats(platform: string, username: string) {
     languages: [] as string[],
     rating: data.rating || 0,
     source: data.source,
+    topics: data.topicDistribution || {},
+    performanceTrends: data.performanceTrends || [],
+    contestHistory: data.contestHistory || [],
   }
 }

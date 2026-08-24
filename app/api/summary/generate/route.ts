@@ -29,6 +29,11 @@ export async function POST(req: NextRequest) {
       difficultySpread: `Easy: ${stats.difficulty.easy} | Med: ${stats.difficulty.medium} | Hard: ${stats.difficulty.hard}`,
       recentActivity: stats.recentActivity, languages: stats.languages,
       streak: `${stats.recentActivity} days`,
+      topTopic: Object.entries(stats.topics || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Data Structures',
+      rating: stats.rating,
+      topics: stats.topics,
+      performanceTrends: stats.performanceTrends,
+      contestHistory: stats.contestHistory,
     }
 
     const insights = analyzeStats(transformed)

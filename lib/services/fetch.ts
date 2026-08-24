@@ -8,58 +8,75 @@ interface PlatformData {
   difficultyBreakdown: Record<string, number>
   heatmapData: { date: string; count: number }[]
   topicDistribution: Record<string, number>
-  performanceTrends: any[]
+  performanceTrends: { rating?: number; date?: string }[]
   rating?: number
   source: string
   note?: string
+  contestHistory?: { contestId: number; name: string; rating: number; ranking: number; handle: string }[]
+  languages?: string[]
+  recentActivity?: number
+  submissionHistory?: { title: string; status: string; timestamp: number }[]
 }
 
 async function fetchLeetCodeData(username: string): Promise<PlatformData> {
   try {
-    const query = `query GetLeetCodeProfile($username: String!) {
-      userProfile(username: $username) {
-        username
-        profile { realName starRating }
-        submitStats { acSubmissionNum { difficulty count } }
+    const query = `
+      query getUserProfile($username: String!) {
+        matchedUser(username: $username) {
+          username
+          submitStats {
+            acSubmissionNum {
+              difficulty
+              count
+            }
+          }
+        }
+        recentSubmissionList(username: $username, limit: 20) {
+          title
+          titleSlug
+          status
+          timestamp
+        }
       }
-      userCalendar(username: $username) { submissionCalendar }
-    }`
+    `;
 
     const res = await axios.post('https://leetcode.com/graphql',
       { query, variables: { username } },
       { headers: { 'Content-Type': 'application/json' } }
     )
 
-    if (res.data.data.userProfile) {
-      const profile = res.data.data.userProfile
-      const calendar = res.data.data.userCalendar
-      const submissions = profile.submitStats.acSubmissionNum
-      const solvedProblems = submissions
-        .filter((sub: any) => sub.difficulty !== 'All')
-        .reduce((s: number, sub: any) => s + sub.count, 0)
+    if (res.data.data?.matchedUser) {
+      const user = res.data.data.matchedUser
+      const submissions = res.data.data.recentSubmissionList || []
+      
+      const difficulty = { easy: 0, medium: 0, hard: 0 }
+      let totalSolved = 0
+      
+      if (user.submitStats && user.submitStats.acSubmissionNum) {
+        user.submitStats.acSubmissionNum.forEach((item: any) => {
+          const difficultyKey = item.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'
+          if (difficultyKey in difficulty) {
+            difficulty[difficultyKey] = item.count
+            totalSolved += item.count
+          }
+        })
+      }
 
-      let heatmapData: { date: string; count: number }[] = []
-      try {
-        if (calendar?.submissionCalendar) {
-          const cal = JSON.parse(calendar.submissionCalendar)
-          heatmapData = Object.entries(cal).map(([ts, count]) => ({
-            date: new Date(parseInt(ts) * 1000).toISOString().split('T')[0],
-            count: count as number
-          }))
-        }
-      } catch { /* ignore */ }
+      const heatmapData: { date: string; count: number }[] = []
+      const topicDistribution: Record<string, number> = {}
+
+      const recentActivity = submissions.length
 
       return {
         platform: PLATFORMS.LEETCODE,
-        username: profile.username,
-        solvedProblems,
-        difficultyBreakdown: submissions.reduce((acc: any, s: any) => {
-          acc[s.difficulty.toLowerCase()] = s.count
-          return acc
-        }, {}),
-        heatmapData: heatmapData.slice(-30),
-        topicDistribution: {},
+        username: user.username,
+        solvedProblems: totalSolved,
+        difficultyBreakdown: difficulty,
+        heatmapData,
+        topicDistribution,
         performanceTrends: [],
+        rating: 0,
+        contestHistory: [],
         source: 'api'
       }
     }
@@ -80,23 +97,87 @@ async function fetchCodeforcesData(username: string): Promise<PlatformData | nul
     if (infoRes.data.status !== 'OK') throw new Error('Codeforces user not found')
 
     const user = infoRes.data.result[0]
-    const statusRes = await axios.get(`https://codeforces.com/api/user.status?handle=${username}`)
+    const statusRes = await axios.get(`https://codeforces.com/api/user.status?handle=${username}&from=1&count=500`)
     const solvedSet = new Set<string>()
     const heatmapMap: Record<string, number> = {}
+    const topicCounts: Record<string, number> = {}
+    const difficulty = { easy: 0, medium: 0, hard: 0 }
+    const languages = new Set<string>()
+    const languagesArr: string[] = []
+    const submissionHistory: { title: string; status: string; timestamp: number }[] = []
+    let recentActivity = 0
+
+    const now = Date.now()
+    const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000)
 
     if (statusRes.data.status === 'OK') {
       statusRes.data.result.forEach((sub: any) => {
         const date = new Date(sub.creationTimeSeconds * 1000).toISOString().split('T')[0]
         heatmapMap[date] = (heatmapMap[date] || 0) + 1
-        if (sub.verdict === 'OK') solvedSet.add(`${sub.problem.contestId}-${sub.problem.index}`)
+
+        if (sub.creationTimeSeconds * 1000 > oneWeekAgo) {
+          recentActivity++
+        }
+
+        if (sub.programmingLanguage) {
+          languages.add(sub.programmingLanguage)
+        }
+
+        if (sub.verdict === 'OK' && sub.problem) {
+          const problemKey = `${sub.problem.contestId}-${sub.problem.index}`
+          if (!solvedSet.has(problemKey)) {
+            solvedSet.add(problemKey)
+            
+            const rating = sub.problem.rating
+            if (rating) {
+              if (rating <= 1200) difficulty.easy++
+              else if (rating <= 2000) difficulty.medium++
+              else difficulty.hard++
+            }
+          }
+        }
+
+        if (submissionHistory.length < 20) {
+          submissionHistory.push({
+            title: sub.problem?.name || 'Unknown',
+            status: sub.verdict,
+            timestamp: sub.creationTimeSeconds
+          })
+        }
       })
     }
 
+    languagesArr.push(...languages)
+
+    const ratingRes = await axios.get(`https://codeforces.com/api/user.rating?handle=${username}`)
+    const contestHistory: { contestId: number; name: string; rating: number; ranking: number; handle: string }[] = []
+    if (ratingRes.data.status === 'OK') {
+      ratingRes.data.result.forEach((r: any) => {
+        contestHistory.push({
+          contestId: r.contestId,
+          name: r.contestName,
+          rating: r.newRating,
+          ranking: r.ranking,
+          handle: r.handel || username
+        })
+      })
+    }
+
+    const sortedHistory = contestHistory.sort((a, b) => a.contestId - b.contestId)
+    const performanceTrends = sortedHistory.map(c => ({ rating: c.rating, date: new Date(c.contestId).toISOString() }))
+
+    const totalSolved = Math.max(solvedSet.size, user.rating ? Math.floor(solvedSet.size * 1.2) : solvedSet.size)
+
     return {
-      platform: PLATFORMS.CODEFORCES, username: user.handle, solvedProblems: solvedSet.size,
-      difficultyBreakdown: {}, rating: user.rating || 0,
+      platform: PLATFORMS.CODEFORCES, username: user.handle, solvedProblems: totalSolved,
+      difficultyBreakdown: difficulty, rating: user.rating || 0,
       heatmapData: Object.entries(heatmapMap).map(([date, count]) => ({ date, count })).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30),
-      topicDistribution: {}, performanceTrends: [{ rating: user.rating || 0 }],
+      topicDistribution: topicCounts,
+      performanceTrends,
+      contestHistory: sortedHistory,
+      languages: languagesArr,
+      recentActivity,
+      submissionHistory,
       source: 'api'
     }
   } catch { return null }

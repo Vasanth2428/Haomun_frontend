@@ -14,11 +14,17 @@ describe('Web Scraping Service - fetchPlatformData', () => {
       vi.mocked(axios.post).mockResolvedValue({
         data: {
           data: {
-            userProfile: {
+            matchedUser: {
               username: 'testuser',
-              submitStats: { acSubmissionNum: [{ difficulty: 'Easy', count: 50 }, { difficulty: 'Medium', count: 30 }, { difficulty: 'Hard', count: 20 }] }
+              submitStats: { acSubmissionNum: [{ difficulty: 'Easy', count: 50 }, { difficulty: 'Medium', count: 30 }, { difficulty: 'Hard', count: 20 }] },
+              tagProblemCounts: {
+                advanced: [{ tagName: 'Dynamic Programming', problemsSolved: 100 }],
+                intermediate: [],
+                fundamental: []
+              }
             },
-            userCalendar: { submissionCalendar: '{"1234567890": 5, "1234567891": 3}' }
+            userContestRanking: { rating: 1500 },
+            userContestRankingHistory: []
           }
         }
       })
@@ -29,6 +35,8 @@ describe('Web Scraping Service - fetchPlatformData', () => {
       expect(result!.username).toBe('testuser')
       expect(result!.solvedProblems).toBe(100)
       expect(result!.difficultyBreakdown).toEqual({ easy: 50, medium: 30, hard: 20 })
+      expect(result!.rating).toBe(1500)
+      expect(result!.topicDistribution['Dynamic Programming']).toBe(100)
     })
 
     it('should return fallback data when LeetCode API fails', async () => {
@@ -48,8 +56,13 @@ describe('Web Scraping Service - fetchPlatformData', () => {
             data: { status: 'OK', result: [{ handle: 'testuser', rating: 1500 }] }
           })
         }
+        if (url.includes('user.rating')) {
+          return Promise.resolve({
+            data: { status: 'OK', result: [{ contestId: 1, contestName: 'Test', newRating: 1600, ranking: 100, handel: 'testuser' }] }
+          })
+        }
         return Promise.resolve({
-          data: { status: 'OK', result: [{ creationTimeSeconds: 1704067200 }] }
+          data: { status: 'OK', result: [{ creationTimeSeconds: 1704067200, problem: { tags: ['dp', 'graphs'] } }] }
         })
       })
 
@@ -101,7 +114,7 @@ describe('Web Scraping Service - fetchPlatformData', () => {
   describe('getBatchPlatformStats', () => {
     it('should fetch stats for multiple users', async () => {
       vi.mocked(axios.get).mockResolvedValue({ data: { rating: '1500' } })
-      vi.mocked(axios.post).mockResolvedValue({ data: { data: { userProfile: null } } })
+      vi.mocked(axios.post).mockResolvedValue({ data: { data: { matchedUser: null } } })
 
       const results = await getBatchPlatformStats([
         { username: 'user1', platform: 'codechef' },
